@@ -4,7 +4,11 @@ trigger:
       - master
       - main
 
-pr: none
+pr:
+  branches:
+    include:
+      - main
+      - master
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -37,8 +41,29 @@ stages:
               uv tool install ruff
               uv run ruff format $(Build.SourcesDirectory)/Python/maths.py
               uv run ruff check --fix $(Build.SourcesDirectory)/Python/maths.py
-            displayName: 'AzureFunction, Databricks code linting'
-
+            displayName: 'Code linting'
+      
+      - job: SonarQubeAnalysis
+        steps:
+          - task: SonarQubePrepare@7
+            displayName: 'Sonar Cube Preperation'
+            inputs:
+              SonarQube: 'SonarQubeConnection'
+              scannerMode: 'cli'
+              configMode: 'manual'
+              cliProjectKey: '$(cliProjectKey)'
+              cliSources: '.'
+            
+          - task: SonarQubeAnalyze@7
+            displayName: 'SonarQube Code Analysis'
+            inputs:
+              jdkversion: 'JAVA_HOME_21_X64'
+          
+          - task: SonarQubePublish@7
+            displayName: 'SonarQube Publish Analysis'
+            inputs:
+              pollingTimeoutSec: '300'
+          
   - stage: Testing
     displayName: 'Run Unit Tests'
     dependsOn: Linting
