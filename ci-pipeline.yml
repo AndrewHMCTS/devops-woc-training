@@ -35,8 +35,8 @@ stages:
               pip install --upgrade pip
               pip install uv
               uv tool install ruff
-              uv run ruff format --fix $(Build.SourcesDirectory)/Python/maths.py
-              uv run ruff check $(Build.SourcesDirectory)/Python/maths.py
+              uv run ruff format $(Build.SourcesDirectory)/Python/maths.py
+              uv run ruff check --fix $(Build.SourcesDirectory)/Python/maths.py
             displayName: 'AzureFunction, Databricks code linting'
 
   - stage: Testing
@@ -54,6 +54,6 @@ stages:
           - script: |
               pip install --upgrade pip
               pip install pytest
-              pytest $(Build.SourcesDirectory)/Python/test_maths.py
+              pytest $(Build.SourcesDirectory)/Python/test_maths_addition.py
             displayName: 'Run pytest on maths.py'
 
