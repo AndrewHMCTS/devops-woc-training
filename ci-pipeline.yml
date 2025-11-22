@@ -43,8 +43,6 @@ stages:
       
       - job: SonarQubeAnalysis
         displayName: 'Run SonarScanner CLI'
-        pool:
-          vmImage: 'ubuntu-latest'
         steps:
           - script: |
               export SONAR_SCANNER_VERSION=7.2.0.5079
