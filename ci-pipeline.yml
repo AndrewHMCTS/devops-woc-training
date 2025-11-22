@@ -1,14 +1,12 @@
 trigger:
   branches:
     include:
-      - master
       - main
 
 pr:
   branches:
     include:
       - main
-      - master
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -45,8 +43,6 @@ stages:
       
       - job: SonarQubeAnalysis
         displayName: 'Run SonarScanner CLI'
-        pool:
-          vmImage: 'ubuntu-latest'
         steps:
           - script: |
               export SONAR_SCANNER_VERSION=7.2.0.5079
@@ -56,7 +52,6 @@ stages:
               unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
               export PATH=$SONAR_SCANNER_HOME/bin:$PATH
 
-              # Run SonarScanner
               sonar-scanner \
                 -Dsonar.organization=ado-sonarqube \
                 -Dsonar.projectKey=ado-sonarqube_ad \
@@ -82,4 +77,3 @@ stages:
               pip install pytest
               pytest $(Build.SourcesDirectory)/Python/test_maths_addition.py
             displayName: 'Run pytest on maths.py'
-
