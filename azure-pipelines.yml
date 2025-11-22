@@ -1,0 +1,59 @@
+trigger:
+  branches:
+    include:
+      - master
+      - main
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Init
+    displayName: 'No dependency stage'
+    jobs:
+      - job: BuildJob
+        displayName: 'Build Job'
+        steps:
+          - script: echo 'Initial stage set-up'
+            displayName: 'Initial stage set-up'
+
+  - stage: Linting
+    displayName: 'Run Linting'
+    dependsOn: Init
+    jobs:
+      - job: LintPython
+        displayName: 'Lint Python Code to PEP8 standards'
+        steps:
+          - task: UsePythonVersion@0
+            displayName: 'Use Python 3.x'
+            inputs:
+              versionSpec: '3.x'
+
+          - script: |
+              pip install --upgrade pip
+              pip install uv
+              uv tool install ruff
+              uv run ruff format $(Build.SourcesDirectory)/Python/maths.py
+              uv run ruff check --fix $(Build.SourcesDirectory)/Python/maths.py
+            displayName: 'AzureFunction, Databricks code linting'
+
+  - stage: Testing
+    displayName: 'Run Unit Tests'
+    dependsOn: Linting
+    jobs:
+      - job: RunTests
+        displayName: 'Unit Tests'
+        steps:
+          - task: UsePythonVersion@0
+            displayName: 'Use Python 3.x'
+            inputs:
+              versionSpec: '3.x'
+
+          - script: |
+              pip install --upgrade pip
+              pip install pytest
+              pytest $(Build.SourcesDirectory)/Python/test_maths_addition.py
+            displayName: 'Run pytest on maths.py'
+
