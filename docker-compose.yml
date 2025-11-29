@@ -9,23 +9,23 @@ services:
     env_file:
       - src/azure-sa/.env
 
-  # db:
-  #   image: postgres:18
-  #   restart: always
-  #   environment:
-  #     POSTGRES_USER: postgres 
-  #     POSTGRES_PASSWORD: postgres
-  #     POSTGRES_DB: postgres  
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - type: tmpfs
-  #       target: /dev/shm
-  #       tmpfs:
-  #         size: 134217728
+  db:
+    image: postgres:18
+    restart: always
+    environment:
+      POSTGRES_USER: postgres 
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres  
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 134217728
 
-  # adminer:
-  #   image: adminer
-  #   restart: always
-  #   ports:
-  #     - "8080:8080"
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
