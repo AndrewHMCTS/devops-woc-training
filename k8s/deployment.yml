@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filevault-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filevault-frontend
+  template:
+    metadata:
+      labels:
+        app: filevault-frontend
+    spec:
+      containers:
+      - name: filevault-frontend
+        image: filevaultregistry-c8dvh0ghcufsa2ev.azurecr.io/filevault_v1:filevault_v1
+        ports:
+        - containerPort: 3000
+      imagePullSecrets:
+      - name: acr-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: filevault-frontend-service
+spec:
+  type: NodePort
+  selector:
+    app: filevault-frontend
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30000
