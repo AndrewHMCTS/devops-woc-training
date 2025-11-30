@@ -2,30 +2,48 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.frontend
     container_name: filevault_v1
     ports:
       - "3000:3000"
     env_file:
       - src/azure-sa/.env
+    environment:
+      - BACKEND_URL=http://backend:8000 
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: filevault_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/filevault_db
+    depends_on:
+      - db
+    command: >
+      sh -c "until pg_isready -h db -p 5432; do echo 'Waiting for DB...'; sleep 2; done;
+           uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
   db:
     image: postgres:18
-    restart: always
     environment:
-      POSTGRES_USER: postgres 
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres  
+      POSTGRES_DB: filevault_db
     ports:
       - "5432:5432"
     volumes:
-      - type: tmpfs
-        target: /dev/shm
-        tmpfs:
-          size: 134217728
+      - ./postgres:/var/lib/postgresql
 
   adminer:
     image: adminer
     restart: always
     ports:
       - "8080:8080"
+
+volumes:
+  postgres_data:

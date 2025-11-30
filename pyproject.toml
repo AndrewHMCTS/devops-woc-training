@@ -1,0 +1,25 @@
+[project]
+name = "filevault-backend"
+version = "0.1.0"
+description = "FastAPI backend for filevault"
+authors = ["Andrew McDevitt andrew.mcdevitt@solirius.com"]
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "python-dotenv",
+    "requests",
+    "python-multipart"
+]
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "I", "C"]
+
+[tool.ruff.format]
+target-version = "py311"
+
+[tool.poetry.scripts]
+start = "app.main:run"
