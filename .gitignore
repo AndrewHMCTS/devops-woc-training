@@ -29,3 +29,42 @@ Thumbs.db
 
 # Uploads
 **/uploads/
+
+# -------------------------
+# TERRAFORM
+# -------------------------
+.terraform/                 # Provider plugins (never commit)
+.terraform.lock.hcl         # Optional: you can commit it, but safe to ignore
+terraform.tfstate           # Never commit state files
+terraform.tfstate.*         # Backup state files
+crash.log
+*.tfvars
+*.tfvars.json
+
+# -------------------------
+# DOCKER / POSTGRES DATA
+# -------------------------
+postgres/
+**/pg_control
+**/pg_stat/
+**/pg_wal/
+**/pg_xact/
+**/pg_multixact/
+**/base/
+**/global/
+**/*.pid
+**/*.stat
+
+# If your DB folder is always stored here, ignore entire path:
+postgres/18/docker/
+
+# -------------------------
+# PYTHON / PROJECT
+# -------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
