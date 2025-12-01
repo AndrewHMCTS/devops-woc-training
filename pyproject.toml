@@ -18,8 +18,5 @@ requires-python = ">=3.11"
 line-length = 88
 select = ["E", "F", "W", "I", "C"]
 
-[tool.ruff.format]
-target-version = "py311"
-
 [tool.poetry.scripts]
 start = "app.main:run"
