@@ -110,9 +110,6 @@ stages:
               echo "Success! Logged in with SP ${{ lz.Client_ID }}"
             displayName: 'Validate Azure CLI login for SP'
 
-              #   echo 'Set subscription to ${{ lz.Subscription_ID}}'
-              #   az account set --subscription ${{ lz.Subscription_ID}}
-
               #   echo 'Create Resource Group'
               #   az group create \
               #       --name ${{ lz.Resource_Group }} \
