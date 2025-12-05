@@ -149,7 +149,27 @@ stages:
                 --account-key $storage_account_key \
                 --blob-endpoint $blob_endpoint
               echo "Success! tf-backend container created!"
-            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)'       
+            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
+
+
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+
+              echo 'Initialise TF backend'
+              terraform init -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+                            -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+                            -backend-config="container_name=tf-backend" \
+                            -backend-config="key=terraform.tfstate"
+
+              echo 'Lint Terraform code'
+              terraform fmt -check
+
+              echo 'Validate Terraform code'
+              terraform validate
+
+              echo 'Create Terraform plan'
+              terraform plan -out=tfplan
+            displayName: 'Terraform Init, Lint, Validate, Plan'      
 
 
   #       - script: |
