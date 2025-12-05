@@ -60,7 +60,7 @@ async def upload_endpoint(
 def list_files(include_deleted: bool = False, db: Session = Depends(get_db)):
     query = db.query(models.FileMetadata)
     if not include_deleted:
-        query = query.filter(models.FileMetadata.deleted == False)
+        query = query.filter(models.FileMetadata.deleted.is_(False))
     
     files = query.all()
     
