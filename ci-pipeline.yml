@@ -83,7 +83,7 @@ stages:
       
   - stage: Build
     displayName: 'Build Docker Images'
-    dependsOn: Testing
+    dependsOn: Linting
     jobs:
       - job: BuildDockerImages
         displayName: 'Build Docker Images'
