@@ -81,7 +81,7 @@ stages:
     - ${{ each lz in deployment.landing_zones}}:
       - stage: Bootstrap_${{ deployment.environment }}_${{ lz.landing_zone }}
         displayName: 'Initialise Terraform Backend'
-        dependsOn: Init
+        dependsOn: Manual_Approval_${{ deployment.environment }}
         jobs:
         - job: BuildAndBootstrap
           displayName: 'Bootstrap TF Backend'
