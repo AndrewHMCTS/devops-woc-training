@@ -77,3 +77,14 @@ stages:
               pip install pytest
               pytest $(Build.SourcesDirectory)/Python/test_maths_addition.py
             displayName: 'Run pytest on maths.py'
+      
+  - stage: Build
+    displayName: 'Build Docker Images'
+    dependsOn: Testing
+    jobs:
+      - job: BuildDockerImages
+        displayName: 'Build Docker Images for Frontend and Backend'
+        steps:
+          - script: |
+              docker docker compose up --build $(Build.SourcesDirectory)
+            displayName: 'Build Docker Images'
