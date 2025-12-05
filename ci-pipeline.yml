@@ -24,8 +24,8 @@ parameters:
             Client_Secret: $(SBOX_CLIENT_SECRET)
             Tenant_ID: $(TENANT_ID)
             StorageAccount: 'devops00-sa-sbox'
-            Resource_Group: 'devops00-rg-sbox'
-            Key_vault_Name: 'devops00-kv-sbox'
+            ResourceGroup: 'devops00-rg-sbox'
+            KeyVaultName: 'devops00-kv-sbox'
 
       - deployment: stg
         environment: stg
@@ -36,8 +36,8 @@ parameters:
             Subscription_ID: $(STG_SUBSCRIPTION_ID)
             Tenant_ID: $(TENANT_ID)
             StorageAccount: 'devops00-sa-stg'
-            Resource_Group: 'devops00-rg-stg'
-            Key_vault_Name: 'devops00-kv-stg'
+            ResourceGroup: 'devops00-rg-stg'
+            KeyVaultName: 'devops00-kv-stg'
 
       - deployment: prod
         environment: prod
@@ -48,8 +48,8 @@ parameters:
             Client_Secret: $(PROD_CLIENT_SECRET)
             Tenant_ID: $(TENANT_ID)
             StorageAccount: 'devops00-sa-prod'
-            Resource_Group: 'devops00-rg-prod'
-            Key_vault_Name: 'devops00-kv-prod'
+            ResourceGroup: 'devops00-rg-prod'
+            KeyVaultName: 'devops00-kv-prod'
 
 stages:
   - stage: Init
@@ -108,49 +108,48 @@ stages:
               echo "Confirm current subscription...""
               az account show --output table
               echo "Success! Logged in with SP ${{ lz.Client_ID }}"
-            displayName: 'Validate Azure CLI login for SP'
 
-              #   echo 'Create Resource Group'
-              #   az group create \
-              #       --name ${{ lz.Resource_Group }} \
-              #       --location "UK South"
+              echo 'Create Resource Group'
+              az group create \
+                  --name ${{ lz.ResourceGroup }} \
+                  --location "UK South"
 
-              #   echo 'Create Storage Account'
-              #   az storage account create --name ${{ lz.StorageAccount }} \
-              #       --resource-group ${{ lz.Resource_Group }} \
-              #       --location "UK South" \
-              #       --sku Standard_LRS \
-              #       --kind StorageV2 \
-              #       --enable-hierarchical-namespace true
+              echo 'Create Storage Account'
+              az storage account create --name ${{ lz.StorageAccount }} \
+                  --resource-group ${{ lz.ResourceGroup }} \
+                  --location "UK South" \
+                  --sku Standard_LRS \
+                  --kind StorageV2 \
+                  --enable-hierarchical-namespace true
 
-              #   echo "Assigning SP Blob Contributor Access"
-              #   az role assignment create \
-              #     --assignee "${{ lz.Client_ID }}" \
-              #     --role "Storage Blob Data Contributor" \
-              #     --scope "/subscriptions/${{ lz.Subscription_ID }}/resourceGroups/${{ lz.Resource_Group }}/providers/Microsoft.Storage/storageAccounts/${{ lz.RefData_StorageAccount }}"
+              echo "Assigning SP Blob Contributor Access"
+              az role assignment create \
+                --assignee "${{ lz.Client_ID }}" \
+                --role "Storage Blob Data Contributor" \
+                --scope "/subscriptions/${{ lz.Subscription_ID }}/resourceGroups/${{ lz.ResourceGroup }}/providers/Microsoft.Storage/storageAccounts/${{ lz.StorageAccount }}"
 
-              #   echo "Retrieving Storage Account Key"
-              #   storage_account_key=$(az storage account keys list \
-              #     --resource-group ${{ lz.Resource_Group }} \
-              #     --account-name ${{ lz.RefData_StorageAccount }} \
-              #     --query '[0].value' -o tsv)
-              #   echo "Success! ${{ lz.RefData_StorageAccount }} is $storage_account_key"
+              echo "Retrieving Storage Account Key"
+              storage_account_key=$(az storage account keys list \
+                --resource-group ${{ lz.ResourceGroup }} \
+                --account-name ${{ lz.StorageAccount }} \
+                --query '[0].value' -o tsv)
+              echo "Success! ${{ lz.StorageAccount }} is $storage_account_key"
 
-              #   echo "Retrieving Blob Endpoint"
-              #   blob_endpoint=$(az storage account show \
-              #     --resource-group ${{ lz.Resource_Group }} \
-              #     --name ${{ lz.RefData_StorageAccount }} \
-              #     --query "primaryEndpoints.blob" -o tsv)
-              #   echo "Success! ${{ lz.RefData_StorageAccount }} is $blob_endpoint"
+              echo "Retrieving Blob Endpoint"
+              blob_endpoint=$(az storage account show \
+                --resource-group ${{ lz.ResourceGroup }} \
+                --name ${{ lz.StorageAccount }} \
+                --query "primaryEndpoints.blob" -o tsv)
+              echo "Success! ${{ lz.StorageAccount }} is $blob_endpoint"
 
-              #   echo "Creating tf-backend container if not exists"
-              #   az storage container create \
-              #     --account-name ${{ lz.RefData_StorageAccount }} \
-              #     --name tf-backend \
-              #     --account-key $storage_account_key \
-              #     --blob-endpoint $blob_endpoint
-              #   echo "Success! tf-backend container created!"
-              # displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)'
+              echo "Creating tf-backend container if not exists"
+              az storage container create \
+                --account-name ${{ lz.StorageAccount }} \
+                --name tf-backend \
+                --account-key $storage_account_key \
+                --blob-endpoint $blob_endpoint
+              echo "Success! tf-backend container created!"
+            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)'
 
 
   # - stage: Build
