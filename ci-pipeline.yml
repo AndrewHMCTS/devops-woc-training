@@ -133,14 +133,14 @@ stages:
                 --resource-group ${{ lz.ResourceGroup }} \
                 --account-name ${{ lz.StorageAccount }} \
                 --query '[0].value' -o tsv)
-              echo "Success! ${{ lz.StorageAccount }} is $storage_account_key"
+              echo "Success! ${{ lz.StorageAccount }} storake account key is $storage_account_key"
 
               echo "Retrieving Blob Endpoint"
               blob_endpoint=$(az storage account show \
                 --resource-group ${{ lz.ResourceGroup }} \
                 --name ${{ lz.StorageAccount }} \
                 --query "primaryEndpoints.blob" -o tsv)
-              echo "Success! ${{ lz.StorageAccount }} is $blob_endpoint"
+              echo "Success! ${{ lz.StorageAccount }} blob endpoint is $blob_endpoint"
 
               echo "Creating tf-backend container if not exists"
               az storage container create \
