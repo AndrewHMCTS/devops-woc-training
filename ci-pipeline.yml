@@ -63,7 +63,7 @@ stages:
 
   - ${{ each deployment in parameters.environment_components }}:
     - ${{ each lz in deployment.landing_zones}}:
-      - stage: Bootstrap-${{ deployment.environment }}_${{ lz.landing_zone }}
+      - stage: Bootstrap_${{ deployment.environment }}_${{ lz.landing_zone }}
         displayName: 'Initialise Terraform Backend'
         dependsOn: Init
         jobs:
