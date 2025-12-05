@@ -149,53 +149,7 @@ stages:
                 --account-key $storage_account_key \
                 --blob-endpoint $blob_endpoint
               echo "Success! tf-backend container created!"
-            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)'
-
-
-  # - stage: Build
-  #   displayName: 'Build Docker Images'
-  #   dependsOn: Linting
-  #   jobs:
-  #   - job: BuildAndBootstrap
-  #     displayName: 'Bootstrap TF Backend & Build Docker Images'
-  #     pool:
-  #       vmImage: 'ubuntu-latest'
-  #     steps:
-  #       - task: AzureCLI@2
-  #         displayName: 'Bootstrap TF backend storage if not exists'
-  #         inputs:
-  #           azureSubscription: ${{ variables.service_connection }}
-  #           scriptType: 'bash'
-  #           scriptLocation: 'inlineScript'
-  #           inlineScript: |
-  #             echo "Assigning SP Blob Contributor Access"
-  #             az role assignment create \
-  #               --assignee "${{ lz.Client_ID }}" \
-  #               --role "Storage Blob Data Contributor" \
-  #               --scope "/subscriptions/${{ lz.Subscription_ID }}/resourceGroups/${{ lz.Resource_Group }}/providers/Microsoft.Storage/storageAccounts/${{ lz.RefData_StorageAccount }}"
-
-  #             echo "Retrieving Storage Account Key"
-  #             storage_account_key=$(az storage account keys list \
-  #               --resource-group ${{ lz.Resource_Group }} \
-  #               --account-name ${{ lz.RefData_StorageAccount }} \
-  #               --query '[0].value' -o tsv)
-  #             echo "Success! ${{ lz.RefData_StorageAccount }} is $storage_account_key"
-
-  #             echo "Retrieving Blob Endpoint"
-  #             blob_endpoint=$(az storage account show \
-  #               --resource-group ${{ lz.Resource_Group }} \
-  #               --name ${{ lz.RefData_StorageAccount }} \
-  #               --query "primaryEndpoints.blob" -o tsv)
-  #             echo "Success! ${{ lz.RefData_StorageAccount }} is $blob_endpoint"
-
-  #             echo "Creating external-csv container if not exists"
-  #             az storage container create \
-  #               --account-name ${{ lz.RefData_StorageAccount }} \
-  #               --name external-csv \
-  #               --account-key $storage_account_key \
-  #               --blob-endpoint $blob_endpoint
-  #             echo "Success! external-csv container created!"
-
+            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)'       
 
 
   #       - script: |
