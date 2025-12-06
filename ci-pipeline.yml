@@ -186,8 +186,8 @@ stages:
               cd $(Build.SourcesDirectory)/terraform
               terraform plan \
                 -out=tfplan \
-                -var env=${{ parameters.environment }} \
-                -var-file "$(Build.SourcesDirectory)/filevault/terraform/${{ parameters.environment }}/${{ parameters.environment }}.tfvars" \
+                -var env=${{ deployment.environment }} \
+                -var-file "$(Build.SourcesDirectory)/filevault/terraform/${{ deployment.environment }}/${{ deployment.environment }}.tfvars" \
                 -lock=false     
               terraform show -no-color tfplan > tfplan.txt
             displayName: 'Terraform Plan'
