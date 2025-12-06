@@ -3,21 +3,6 @@ variable "location" {
   default = "uksouth"
 }
 
-variable "resource_group_name" {
-  type    = string
-  default = "rg-filevault"
-}
-
-variable "acr_name" {
-  type    = string
-  default = "filevaultacr"
-}
-
-variable "aks_name" {
-  type    = string
-  default = "filevault-aks"
-}
-
 variable "env" {
   description = "Environment name (sbox, stg, prod)"
   type        = string

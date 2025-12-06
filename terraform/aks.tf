@@ -1,8 +1,8 @@
 resource "azurerm_kubernetes_cluster" "aks" {
-  name                = var.aks_name
+  name                = "filevault-aks-${var.env}"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
-  dns_prefix          = "${var.aks_name}-dns"
+  dns_prefix          = "filevault-aks-${var.env}-dns"
 
   default_node_pool {
     name       = "default"
