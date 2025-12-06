@@ -152,6 +152,15 @@ stages:
             displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
 
 
+          - task: TerraformInstaller@1
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: '1.8.5'
+
+          - script: terraform --version
+            displayName: 'Verify Terraform Installed'
+
+
           - script: |
               cd $(Build.SourcesDirectory)/terraform
 
