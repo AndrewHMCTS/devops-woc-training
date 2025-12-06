@@ -103,9 +103,9 @@ stages:
 
               # Optionally set subscription explicitly
               az account set --subscription ${{ lz.Subscription_ID }}
-              echo "Account Subscription set to ${{ lz.Subscription_ID }}""
+              echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-              echo "Confirm current subscription...""
+              echo "Confirm current subscription..."
               az account show --output table
               echo "Success! Logged in with SP ${{ lz.Client_ID }}"
 
@@ -149,7 +149,121 @@ stages:
                 --account-key $storage_account_key \
                 --blob-endpoint $blob_endpoint
               echo "Success! tf-backend container created!"
-            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)'       
+            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
+
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: 'latest'
+            displayName: 'Install Terraform using TerraformInstaller@0'
+
+          - script: |   
+              cd $(Build.SourcesDirectory)/terraform           
+              terraform --version
+              terraform init -input=false \
+                -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+                -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+                -backend-config="container_name=tf-backend" \
+                -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
+            displayName: 'Terraform Init & initialise backend'
+          
+          - script: |
+              curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+              tflint --version
+            displayName: 'Install TFLint'
+
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              terraform validate
+            displayName: 'Terraform Validate'
+
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              tflint --init
+              tflint
+            displayName: 'Terraform Lint'
+
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              terraform plan \
+                -out=tfplan \
+                -var env=${{ deployment.environment }} \
+                -var="subscription_id=${{ lz.Subscription_ID }}" \
+                -var="client_id=${{ lz.Client_ID }}" \
+                -lock=false     
+              terraform show -no-color tfplan > tfplan.txt
+            displayName: 'Terraform Plan'
+
+              # cd $(Build.SourcesDirectory)/terraform
+              # terraform plan \
+              #   -out=tfplan \
+              #   -var env=${{ deployment.environment }} \
+              #   -var-file="$(Build.SourcesDirectory)/terraform/${{ deployment.environment }}.tfvars" \
+              #   -lock=false     
+            #   # terraform show -no-color tfplan > tfplan.txt
+            # displayName: 'Terraform Plan'
+          
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Build.SourcesDirectory)/terraform/tfplan.txt'
+              artifactName: 'tfplan'
+            displayName: 'Publish Terraform Plan Artifact'
+
+
+        # - script: |
+        #     echo "## Terraform Plan Results" > $(Build.ArtifactStagingDirectory)/tfplan-comment.md
+        #     cd $(Build.SourcesDirectory)/terraform
+        #     terraform plan -no-color -out=tfplan
+        #     terraform show -no-color tfplan >> $(Build.ArtifactStagingDirectory)/tfplan-comment.md
+        #   displayName: 'Generate Terraform Plan Comment'
+
+        # - task: GitHubPRComment@1
+        #   displayName: 'Post Terraform Plan to PR'
+        #   inputs:
+        #     githubConnection: 'GitHub-Devops-WOC'       # OAuth service connection
+        #     repositoryName: 'AndrewHMCTS/devops-woc-training'
+        #     pullRequestNumber: $(System.PullRequest.PullRequestId)
+        #     bodyPath: '$(Build.ArtifactStagingDirectory)/tfplan-comment.md'
+        #     fileExtension: 'md'
+        #     displayName: 'Post Terraform Plan to GitHub PR'
+
+
+          # - task: GitHubPRComment@1
+          #   inputs:
+          #     githubConnection: 'devops-woc-training-AM' # replace with your GitHub SC
+          #     repositoryName: 'AndrewHMCTS/devops-woc-training'                    # your repo
+          #     pullRequestId: '$(System.PullRequest.PullRequestId)'
+          #     comment: |
+          #       ### Terraform Plan Results
+          #       ```
+          #       $(cat $(Build.SourcesDirectory)/terraform/tfplan.txt)
+          #       ```
+          #   displayName: 'Post Terraform Plan to GitHub PR'
+ 
+
+      #     - script: |
+      #         cd $(Build.SourcesDirectory)/terraform
+
+      #         echo 'Installing Terraform'
+      #         brew tap hashicorp/tap
+      #         brew install hashicorp/tap/terraform
+      #         echo 'Terraform successfully installed with version: '
+      #         terraform -version
+
+      #         echo 'Initialise TF backend'
+      #         terraform init -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+      #                       -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+      #                       -backend-config="container_name=tf-backend" \
+      #                       -backend-config="key=terraform.tfstate"
+
+      #         echo 'Lint Terraform code'
+      #         terraform fmt -check
+
+      #         echo 'Validate Terraform code'
+      #         terraform validate
+
+      #         echo 'Create Terraform plan'
+      #         terraform plan -out=tfplan
+      #       displayName: 'Terraform Init, Lint, Validate, Plan'      
 
 
   #       - script: |
