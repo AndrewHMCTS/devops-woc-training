@@ -182,35 +182,35 @@ stages:
               tflint
             displayName: 'Terraform Lint'
 
-          # - script: |
-          #     cd $(Build.SourcesDirectory)/terraform
-          #     terraform plan -out=tfplan
-          #     terraform show -no-color tfplan > tfplan.txt
-          #   displayName: 'Terraform Plan'
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              terraform plan -out=tfplan
+              terraform show -no-color tfplan > tfplan.txt
+            displayName: 'Terraform Plan'
           
-          # - task: PublishPipelineArtifact@1
-          #   inputs:
-          #     targetPath: '$(Build.SourcesDirectory)/terraform/tfplan.txt'
-          #     artifactName: 'tfplan'
-          #   displayName: 'Publish Terraform Plan Artifact'
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Build.SourcesDirectory)/terraform/tfplan.txt'
+              artifactName: 'tfplan'
+            displayName: 'Publish Terraform Plan Artifact'
 
 
-        - script: |
-            echo "## Terraform Plan Results" > $(Build.ArtifactStagingDirectory)/tfplan-comment.md
-            cd $(Build.SourcesDirectory)/terraform
-            terraform plan -no-color -out=tfplan
-            terraform show -no-color tfplan >> $(Build.ArtifactStagingDirectory)/tfplan-comment.md
-          displayName: 'Generate Terraform Plan Comment'
+        # - script: |
+        #     echo "## Terraform Plan Results" > $(Build.ArtifactStagingDirectory)/tfplan-comment.md
+        #     cd $(Build.SourcesDirectory)/terraform
+        #     terraform plan -no-color -out=tfplan
+        #     terraform show -no-color tfplan >> $(Build.ArtifactStagingDirectory)/tfplan-comment.md
+        #   displayName: 'Generate Terraform Plan Comment'
 
-        - task: GitHubPRComment@1
-          displayName: 'Post Terraform Plan to PR'
-          inputs:
-            githubConnection: 'GitHub-Devops-WOC'       # OAuth service connection
-            repositoryName: 'AndrewHMCTS/devops-woc-training'
-            pullRequestNumber: $(System.PullRequest.PullRequestId)
-            bodyPath: '$(Build.ArtifactStagingDirectory)/tfplan-comment.md'
-            fileExtension: 'md'
-            displayName: 'Post Terraform Plan to GitHub PR'
+        # - task: GitHubPRComment@1
+        #   displayName: 'Post Terraform Plan to PR'
+        #   inputs:
+        #     githubConnection: 'GitHub-Devops-WOC'       # OAuth service connection
+        #     repositoryName: 'AndrewHMCTS/devops-woc-training'
+        #     pullRequestNumber: $(System.PullRequest.PullRequestId)
+        #     bodyPath: '$(Build.ArtifactStagingDirectory)/tfplan-comment.md'
+        #     fileExtension: 'md'
+        #     displayName: 'Post Terraform Plan to GitHub PR'
 
 
           # - task: GitHubPRComment@1
