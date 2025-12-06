@@ -164,12 +164,47 @@ stages:
                 -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
                 -backend-config="container_name=tf-backend" \
                 -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
-              displayName: 'Terraform Init'
+            displayName: 'Terraform Init & initialise backend'
+          
+          - script: |
+              curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+              tflint --version
+            displayName: 'Install TFLint'
 
-      #         terraform plan -out=tfplan
-      # displayName: 'Terraform Init and Plan'
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              terraform validate
+            displayName: 'Terraform Validate'
 
-      #       displayName: 'Install Terraform Manually'
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              tflint --init
+              tflint
+            displayName: 'Terraform Lint'
+
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              terraform plan -out=tfplan
+              terraform show -no-color tfplan > tfplan.txt
+            displayName: 'Terraform Plan'
+          
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Build.SourcesDirectory)/terraform/tfplan.txt'
+              artifactName: 'tfplan'
+            displayName: 'Publish Terraform Plan Artifact'
+
+          - task: GitHubPRComment@1
+            inputs:
+              githubConnection: 'devops-woc-training-AM' # replace with your GitHub SC
+              repositoryName: 'AndrewHMCTS/devops-woc-training'                    # your repo
+              pullRequestId: '$(System.PullRequest.PullRequestId)'
+              comment: |
+                ### Terraform Plan Results
+                ```
+                $(cat $(Build.SourcesDirectory)/terraform/tfplan.txt)
+                ```
+            displayName: 'Post Terraform Plan to GitHub PR'
  
 
       #     - script: |
