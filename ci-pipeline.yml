@@ -193,6 +193,34 @@ stages:
               terraform show -no-color tfplan > tfplan.txt
             displayName: 'Terraform Plan'
 
+          - task: Bash@3
+            displayName: 'Post Plan to PR'
+            condition: ne(variables['System.PullRequest.PullRequestNumber'], '')
+            env:
+              GITHUB_TOKEN: $(GITHUBPAT)
+            inputs:
+              targetType: 'inline'
+              script: |
+                PLAN=$(cat $(Build.SourcesDirectory)/terraform/tfplan.txt)
+                
+                curl -X POST \
+                  -H "Authorization: token ${GITHUB_TOKEN}" \
+                  -H "Accept: application/vnd.github.v3+json" \
+                  https://api.github.com/repos/$(Build.Repository.Name)/issues/$(System.PullRequest.PullRequestNumber)/comments \
+                  -d @- <<EOF
+                {
+                  "body": "## Terraform Plan - ${{ deployment.environment }} - LZ ${{ lz.landing_zone }}\n\n<details>\n<summary>View Plan</summary>\n\n\`\`\`terraform\n${PLAN}\n\`\`\`\n\n</details>"
+                }
+                EOF
+
+          # - task: PublishPipelineArtifact@1
+          #   inputs:
+          #     targetPath: '$(Build.SourcesDirectory)/terraform/tfplan.txt'
+          #     artifact: 'terraform-plan-${{ deployment.environment }}-${{ lz.landing_zone }}'
+          #     publishLocation: 'pipeline'
+          #   displayName: 'Publish Terraform Plan'
+
+
               # cd $(Build.SourcesDirectory)/terraform
               # terraform plan \
               #   -out=tfplan \
