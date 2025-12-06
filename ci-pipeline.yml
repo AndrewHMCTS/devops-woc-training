@@ -170,7 +170,7 @@ stages:
       # displayName: 'Terraform Init and Plan'
 
       #       displayName: 'Install Terraform Manually'
-
+ 
 
       #     - script: |
       #         cd $(Build.SourcesDirectory)/terraform
