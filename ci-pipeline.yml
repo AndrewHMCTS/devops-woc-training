@@ -103,9 +103,9 @@ stages:
 
               # Optionally set subscription explicitly
               az account set --subscription ${{ lz.Subscription_ID }}
-              echo "Account Subscription set to ${{ lz.Subscription_ID }}""
+              echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-              echo "Confirm current subscription...""
+              echo "Confirm current subscription..."
               az account show --output table
               echo "Success! Logged in with SP ${{ lz.Client_ID }}"
 
@@ -187,10 +187,20 @@ stages:
               terraform plan \
                 -out=tfplan \
                 -var env=${{ deployment.environment }} \
-                -var-file="$(Build.SourcesDirectory)/terraform/${{ deployment.environment }}.tfvars" \
+                -var="subscription_id=${{ lz.Subscription_ID }}" \
+                -var="client_id=${{ lz.Client_ID }}" \
                 -lock=false     
               terraform show -no-color tfplan > tfplan.txt
             displayName: 'Terraform Plan'
+
+              # cd $(Build.SourcesDirectory)/terraform
+              # terraform plan \
+              #   -out=tfplan \
+              #   -var env=${{ deployment.environment }} \
+              #   -var-file="$(Build.SourcesDirectory)/terraform/${{ deployment.environment }}.tfvars" \
+              #   -lock=false     
+            #   # terraform show -no-color tfplan > tfplan.txt
+            # displayName: 'Terraform Plan'
           
           - task: PublishPipelineArtifact@1
             inputs:
