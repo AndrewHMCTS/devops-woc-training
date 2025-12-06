@@ -193,18 +193,28 @@ stages:
               targetPath: '$(Build.SourcesDirectory)/terraform/tfplan.txt'
               artifactName: 'tfplan'
             displayName: 'Publish Terraform Plan Artifact'
-
+          
           - task: GitHubPRComment@1
             inputs:
-              githubConnection: 'devops-woc-training-AM' # replace with your GitHub SC
-              repositoryName: 'AndrewHMCTS/devops-woc-training'                    # your repo
-              pullRequestId: '$(System.PullRequest.PullRequestId)'
+              githubConnection: 'devops-woc-training-AM'
+              repositoryName: 'AndrewHMCTS/devops-woc-training'
+              pullRequestId: $(System.PullRequest.PullRequestId)
               comment: |
-                ### Terraform Plan Results
-                ```
-                $(cat $(Build.SourcesDirectory)/terraform/tfplan.txt)
-                ```
+                Terraform Plan Results:
+                $(terraformPlanOutput)
             displayName: 'Post Terraform Plan to GitHub PR'
+
+          # - task: GitHubPRComment@1
+          #   inputs:
+          #     githubConnection: 'devops-woc-training-AM' # replace with your GitHub SC
+          #     repositoryName: 'AndrewHMCTS/devops-woc-training'                    # your repo
+          #     pullRequestId: '$(System.PullRequest.PullRequestId)'
+          #     comment: |
+          #       ### Terraform Plan Results
+          #       ```
+          #       $(cat $(Build.SourcesDirectory)/terraform/tfplan.txt)
+          #       ```
+          #   displayName: 'Post Terraform Plan to GitHub PR'
  
 
       #     - script: |
