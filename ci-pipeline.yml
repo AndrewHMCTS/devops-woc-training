@@ -155,6 +155,12 @@ stages:
           - script: |
               cd $(Build.SourcesDirectory)/terraform
 
+              echo 'Installing Terraform'
+              brew tap hashicorp/tap
+              brew install hashicorp/tap/terraform
+              echo 'Terraform successfully installed with version: '
+              terraform -version
+
               echo 'Initialise TF backend'
               terraform init -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
                             -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
