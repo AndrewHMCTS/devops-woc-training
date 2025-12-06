@@ -152,13 +152,17 @@ stages:
             displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
 
 
-          - task: TerraformInstaller@1
-            displayName: 'Install Terraform'
-            inputs:
-              terraformVersion: '1.8.5'
+          - script: |
+              echo "Downloading Terraform binary..."
 
-          - script: terraform --version
-            displayName: 'Verify Terraform Installed'
+              TF_VERSION=1.8.5
+              wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+
+              unzip terraform_${TF_VERSION}_linux_amd64.zip
+              sudo mv terraform /usr/local/bin/
+              
+              terraform --version
+            displayName: 'Install Terraform Manually'
 
 
           - script: |
