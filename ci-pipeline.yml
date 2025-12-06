@@ -184,7 +184,11 @@ stages:
 
           - script: |
               cd $(Build.SourcesDirectory)/terraform
-              terraform plan -out=tfplan
+              terraform plan \
+                -out=tfplan \
+                -var env=${{ parameters.environment }} \
+                -var-file "$(System.DefaultWorkingDirectory)/$(buildRepoSuffix)/environments/${{ parameters.environment }}/default.tfvars" \
+                -lock=false     
               terraform show -no-color tfplan > tfplan.txt
             displayName: 'Terraform Plan'
           
