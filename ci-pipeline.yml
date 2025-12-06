@@ -151,44 +151,51 @@ stages:
               echo "Success! tf-backend container created!"
             displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
 
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: 'latest'
+            displayName: 'Install Terraform using TerraformInstaller@0'
 
-          - script: |
-              echo "Downloading Terraform binary..."
 
-              TF_VERSION=1.8.5
-              wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
-
-              unzip terraform_${TF_VERSION}_linux_amd64.zip
-              sudo mv terraform /usr/local/bin/
-              
+          - script: |   
+              cd $(Build.SourcesDirectory)/terraform           
               terraform --version
-            displayName: 'Install Terraform Manually'
+              terraform init \
+                -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+                -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+                -backend-config="container_name=tf-backend" \
+                -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
+
+      #         terraform plan -out=tfplan
+      # displayName: 'Terraform Init and Plan'
+
+      #       displayName: 'Install Terraform Manually'
 
 
-          - script: |
-              cd $(Build.SourcesDirectory)/terraform
+      #     - script: |
+      #         cd $(Build.SourcesDirectory)/terraform
 
-              echo 'Installing Terraform'
-              brew tap hashicorp/tap
-              brew install hashicorp/tap/terraform
-              echo 'Terraform successfully installed with version: '
-              terraform -version
+      #         echo 'Installing Terraform'
+      #         brew tap hashicorp/tap
+      #         brew install hashicorp/tap/terraform
+      #         echo 'Terraform successfully installed with version: '
+      #         terraform -version
 
-              echo 'Initialise TF backend'
-              terraform init -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
-                            -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
-                            -backend-config="container_name=tf-backend" \
-                            -backend-config="key=terraform.tfstate"
+      #         echo 'Initialise TF backend'
+      #         terraform init -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+      #                       -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+      #                       -backend-config="container_name=tf-backend" \
+      #                       -backend-config="key=terraform.tfstate"
 
-              echo 'Lint Terraform code'
-              terraform fmt -check
+      #         echo 'Lint Terraform code'
+      #         terraform fmt -check
 
-              echo 'Validate Terraform code'
-              terraform validate
+      #         echo 'Validate Terraform code'
+      #         terraform validate
 
-              echo 'Create Terraform plan'
-              terraform plan -out=tfplan
-            displayName: 'Terraform Init, Lint, Validate, Plan'      
+      #         echo 'Create Terraform plan'
+      #         terraform plan -out=tfplan
+      #       displayName: 'Terraform Init, Lint, Validate, Plan'      
 
 
   #       - script: |
