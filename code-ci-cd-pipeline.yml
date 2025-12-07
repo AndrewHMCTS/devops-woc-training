@@ -1,0 +1,96 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+  - name: environment_components
+    type: object
+    default:
+      - deployment: sbox
+        environment: sbox
+        landing_zones: 
+          - landing_zone: '00'
+            Client_ID: $(SBOX_CLIENT_ID)
+            Subscription_ID: $(SBOX_SUBSCRIPTION_ID)
+            Client_Secret: $(SBOX_CLIENT_SECRET)
+            Tenant_ID: $(TENANT_ID)
+            StorageAccount: 'devops00sasbox'
+            ResourceGroup: 'devops00-rg-sbox'
+            KeyVaultName: 'devops00-kv-sbox'
+
+      - deployment: stg
+        environment: stg
+        landing_zones: 
+          - landing_zone: '00'
+            Client_ID: $(STG_CLIENT_ID)
+            Client_Secret: $(STG_CLIENT_SECRET)
+            Subscription_ID: $(STG_SUBSCRIPTION_ID)
+            Tenant_ID: $(TENANT_ID)
+            StorageAccount: 'devops00sastg'
+            ResourceGroup: 'devops00-rg-stg'
+            KeyVaultName: 'devops00-kv-stg'
+
+      - deployment: prod
+        environment: prod
+        landing_zones: 
+          - landing_zone: '00'
+            Client_ID: $(PROD_CLIENT_ID)
+            Subscription_ID: $(PROD_SUBSCRIPTION_ID)
+            Client_Secret: $(PROD_CLIENT_SECRET)
+            Tenant_ID: $(TENANT_ID)
+            StorageAccount: 'devops00saprod'
+            ResourceGroup: 'devops00-rg-prod'
+            KeyVaultName: 'devops00-kv-prod'
+
+stages:
+  - stage: Init
+    displayName: 'No dependency stage'
+    jobs:
+      - job: BuildJob
+        displayName: 'Build Job'
+        steps:
+          - script: echo 'Initial stage set-up'
+            displayName: 'Initial stage set-up'
+
+  - ${{ each deployment in parameters.environment_components }}:
+    - ${{ if or(eq(deployment.environment, 'stg'), eq(deployment.environment, 'prod')) }}:
+      - stage: Manual_Approval_${{ deployment.environment }}
+        displayName: 'Manual Approval for ${{ deployment.environment }}'
+        dependsOn: Init
+        jobs:
+          - job: waitForValidation
+            displayName: Wait for Manual Validation
+            pool: server
+            steps:
+              - task: ManualValidation@1
+                timeoutInMinutes: 23160
+                inputs:
+                  approvers: andrew.mcdevitt@hmcts.net
+                  instructions: Please validate the build configuration and resume
+
+  - ${{ each deployment in parameters.environment_components }}:
+    - ${{ if or(eq(deployment.environment, 'stg'), eq(deployment.environment, 'prod')) }}:
+      - stage: Build_Docker_Image_${{ deployment.environment }}
+        displayName: 'Build Docker Image for ${{ deployment.environment }}'
+        dependsOn: Manual_Approval_${{ deployment.environment }}
+        jobs:
+        - job: Build Docker Image
+          displayName: 'Build Docker & Bootstrap TF Backend'
+          pool:
+            vmImage: 'ubuntu-latest'
+          steps:
+            - script: |
+                cd $(Build.SourcesDirectory)
+                docker compose build
+              displayName: 'Build Docker Images'
+  
+
