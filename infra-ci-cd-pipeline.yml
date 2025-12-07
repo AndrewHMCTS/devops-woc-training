@@ -202,7 +202,7 @@ stages:
       - stage: Deployment_${{ deployment.environment }}_${{ lz.landing_zone }}
         displayName: 'Deploy Infrastructure to ${{ deployment.environment }}${{ lz.landing_zone }}'
         dependsOn: Bootstrap_${{ deployment.environment }}_${{ lz.landing_zone }}
-        condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
         jobs:
           - job: DeployInfrastructure
@@ -233,4 +233,3 @@ stages:
                 cd "$(Pipeline.Workspace)/tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
                 terraform apply -input=false -auto-approve tfplan
               displayName: 'Terraform Apply'
-              
