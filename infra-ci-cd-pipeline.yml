@@ -225,11 +225,15 @@ stages:
             - download: current
               artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
               displayName: 'Download Terraform Plan'
-
+          
             - script: |
-                cd $(Build.SourcesDirectory)/terraform
-                terraform fmt
-              displayName: 'Terraform Format'
+                echo "Logging in with SP..."
+                az login --service-principal \
+                    --username ${{ lz.Client_ID }} \
+                    --password ${{ lz.Client_Secret }} \
+                    --tenant ${{ lz.Tenant_ID }}
+                az account set --subscription ${{ lz.Subscription_ID }}
+                echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
             - script: |
                 cd $(Build.SourcesDirectory)/terraform
@@ -239,6 +243,11 @@ stages:
                   -backend-config="container_name=tf-backend" \
                   -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
               displayName: 'Terraform Init'
+          
+            - script: |
+                cd $(Build.SourcesDirectory)/terraform
+                terraform fmt
+              displayName: 'Terraform Format'
 
             - script: |
                 cd $(Build.SourcesDirectory)/terraform
