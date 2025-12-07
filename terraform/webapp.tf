@@ -1,47 +1,45 @@
-resource "azurerm_linux_web_app" "frontend" {
-  name                = "devopswoc-frontend"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  service_plan_id     = azurerm_service_plan.appplan.id
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  site_config {
-    application_stack {
-      docker_image_name        = "${azurerm_container_registry.acr.login_server}/frontend:latest"
-      docker_registry_url      = "https://${azurerm_container_registry.acr.login_server}"
-      docker_registry_username = azurerm_container_registry.acr.admin_username
-      docker_registry_password = azurerm_container_registry.acr.admin_password
+locals {
+  webapps = {
+    frontend = {
+      name  = "devopswoc-frontend"
+      image = "devopswoc-frontend:latest"
+      port  = "80"
     }
-  }
-
-  app_settings = {
-    WEBSITES_PORT = "80"
+    backend = {
+      name  = "devopswoc-backend"
+      image = "devopswoc-backend:latest"
+      port  = "8080"
+    }
   }
 }
 
-resource "azurerm_linux_web_app" "backend" {
-  name                = "myapp-backend"
+resource "azurerm_linux_web_app" "apps" {
+  for_each            = local.webapps
+  name                = each.value.name
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.appplan.id
-
-  site_config {
-    application_stack {
-      docker_image_name        = "${azurerm_container_registry.acr.login_server}/frontend:latest"
-      docker_registry_url      = "https://${azurerm_container_registry.acr.login_server}"
-      docker_registry_username = azurerm_container_registry.acr.admin_username
-      docker_registry_password = azurerm_container_registry.acr.admin_password
-    }
-  }
 
   identity {
     type = "SystemAssigned"
   }
 
-  app_settings = {
-    WEBSITES_PORT                   = "8080"
+  site_config {
+    application_stack {
+      docker_image_name   = "${azurerm_container_registry.acr.login_server}/${each.key}:${each.value.image}"
+      docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
+    }
   }
+
+  app_settings = {
+    WEBSITES_PORT = each.value.port
+  }
+}
+
+resource "azurerm_role_assignment" "acr_pull" {
+  for_each = azurerm_linux_web_app.apps
+
+  principal_id         = each.value.identity[0].principal_id
+  role_definition_name = "AcrPull"
+  scope                = azurerm_container_registry.acr.id
 }

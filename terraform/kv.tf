@@ -39,6 +39,17 @@ resource "azurerm_key_vault" "kv" {
   }
 }
 
+resource "azurerm_key_vault_access_policy" "terraform" {
+  key_vault_id = azurerm_key_vault.kv.id
+
+  tenant_id = data.azurerm_client_config.current.tenant_id
+  object_id = data.azurerm_client_config.current.object_id 
+
+  secret_permissions = [
+    "Get", "Set", "List"
+  ]
+}
+
 resource "azurerm_key_vault_secret" "acr_user" {
   name         = "ACR-USERNAME"
   value        = azurerm_container_registry.acr.admin_username
