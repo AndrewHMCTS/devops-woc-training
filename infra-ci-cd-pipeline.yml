@@ -233,3 +233,4 @@ stages:
                 cd "$(Pipeline.Workspace)/tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
                 terraform apply -input=false -auto-approve tfplan
               displayName: 'Terraform Apply'
+              
