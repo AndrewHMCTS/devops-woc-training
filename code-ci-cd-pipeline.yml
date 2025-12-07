@@ -92,5 +92,23 @@ stages:
                 cd $(Build.SourcesDirectory)
                 docker compose build
               displayName: 'Build Docker Images'
+
+
+
+
+# - stage: Build
+#   jobs:
+#     - job: BuildDocker
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       steps:
+#         - script: |
+#             docker build -t myfrontend:$(Build.BuildId) ./frontend
+#             docker build -t mybackend:$(Build.BuildId) ./backend
+#             docker tag myfrontend:$(Build.BuildId) $(ACR_LOGIN)/frontend:$(Build.BuildId)
+#             docker tag mybackend:$(Build.BuildId) $(ACR_LOGIN)/backend:$(Build.BuildId)
+#             docker login $(ACR_LOGIN) -u $(ACR_USER) -p $(ACR_PASSWORD)
+#             docker push $(ACR_LOGIN)/frontend:$(Build.BuildId)
+#             docker push $(ACR_LOGIN)/backend:$(Build.BuildId)
   
 

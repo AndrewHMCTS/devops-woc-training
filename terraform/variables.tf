@@ -11,9 +11,11 @@ variable "env" {
 variable "subscription_id" {
   description = "Azure Subscription ID"
   type        = string
+  default     = ""
 }
 
 variable "client_id" {
   description = "Azure Client ID"
   type        = string
+  default     = ""
 }
