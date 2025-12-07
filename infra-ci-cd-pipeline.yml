@@ -173,7 +173,7 @@ stages:
             
               az keyvault set-policy \
               --name devops00-kv-sbox \
-              --object-id $SP_OBJECT_ID \
+              --object-id ${{ lz.Client_ID }} \
               --secret-permissions get list set delete recover backup restore purge
             displayName: 'Azure CLI Login with Service Principal & assign KV permissions'
 
