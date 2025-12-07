@@ -151,57 +151,85 @@ stages:
                 --blob-endpoint $blob_endpoint
               echo "Success! tf-backend container created!"
             displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
+        
+        - job: GrantSPAccessToKV
+          displayName: 'Assign SP Access to KV'
+          pool:
+            vmImage: 'ubuntu-latest'
+            steps:
+            - script: |
+                echo "Logging in with SP..."
+                az login --service-principal \
+                    --username ${{ lz.Client_ID }} \
+                    --password ${{ lz.Client_Secret }} \
+                    --tenant ${{ lz.Tenant_ID }}
+                az account set --subscription ${{ lz.Subscription_ID }}
+                echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-          - task: TerraformInstaller@0
-            inputs:
-              terraformVersion: 'latest'
-            displayName: 'Install Terraform using TerraformInstaller@0'
+                echo "Assigning SP Key Vault Contributor Access"
+                az role assignment create \
+                  --assignee "${{ lz.Client_ID }}" \
+                  --role "Key Vault Contributor" \
+                  --scope "/subscriptions/${{ lz.Subscription_ID }}/resourceGroups/${{ lz.ResourceGroup }}/providers/Microsoft.KeyVault/vaults/${{ lz.KeyVaultName }}"
+              displayName: 'Assign SP Key Vault Contributor Role'
+        
+        - job: TerraformBootstrap
+          displayName: 'Terraform Init, Validate, Lint & Plan'
+          pool:
+            vmImage: 'ubuntu-latest'
+            steps:
+            - task: TerraformInstaller@0
+              inputs:
+                terraformVersion: 'latest'
+              displayName: 'Install Terraform using TerraformInstaller@0'
 
-          - script: |   
-              cd $(Build.SourcesDirectory)/terraform           
-              terraform --version
-              terraform init -input=false \
-                -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
-                -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
-                -backend-config="container_name=tf-backend" \
-                -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
-            displayName: 'Terraform Init & initialise backend'
+              steps:
+
+            - script: |   
+                cd $(Build.SourcesDirectory)/terraform           
+                terraform --version
+                terraform init -input=false \
+                  -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+                  -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+                  -backend-config="container_name=tf-backend" \
+                  -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
+              displayName: 'Terraform Init & initialise backend'
           
-          - script: |
-              curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-              tflint --version
-            displayName: 'Install TFLint'
+            - script: |
+                curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+                tflint --version
+              displayName: 'Install TFLint'
 
-          - script: |
-              cd $(Build.SourcesDirectory)/terraform
-              terraform fmt
-            displayName: 'Terraform Format'
+            - script: |
+                cd $(Build.SourcesDirectory)/terraform
+                terraform fmt
+              displayName: 'Terraform Format'
 
-          - script: |
-              cd $(Build.SourcesDirectory)/terraform
-              terraform validate
-            displayName: 'Terraform Validate'
+            - script: |
+                cd $(Build.SourcesDirectory)/terraform
+                terraform validate
+              displayName: 'Terraform Validate'
 
-          - script: |
-              cd $(Build.SourcesDirectory)/terraform
-              tflint --init
-              tflint
-            displayName: 'Terraform Lint'
+            - script: |
+                cd $(Build.SourcesDirectory)/terraform
+                tflint --init
+                tflint
+              displayName: 'Terraform Lint'
 
-          - script: |
-              cd $(Build.SourcesDirectory)/terraform
-              terraform plan \
-                -out=tfplan \
-                -var env=${{ deployment.environment }} \
-                -var="subscription_id=${{ lz.Subscription_ID }}" \
-                -var="client_id=${{ lz.Client_ID }}" \
-                -lock=false     
-              terraform show -no-color tfplan > tfplan.txt
-            displayName: 'Terraform Plan'
-          
-          - publish: "$(Build.SourcesDirectory)/terraform/tfplan"
-            artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
-            displayName: "Publish Terraform Plan Artifact"
+            - script: |
+                cd $(Build.SourcesDirectory)/terraform
+                terraform plan \
+                  -out=tfplan \
+                  -var env=${{ deployment.environment }} \
+                  -var="subscription_id=${{ lz.Subscription_ID }}" \
+                  -var="client_id=${{ lz.Client_ID }}" \
+                  -lock=false     
+                terraform show -no-color tfplan > tfplan.txt
+              displayName: 'Terraform Plan'
+            
+            - publish: "$(Build.SourcesDirectory)/terraform/tfplan"
+              artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+              displayName: "Publish Terraform Plan Artifact"
   
   - ${{ each deployment in parameters.environment_components }}:
     - ${{ each lz in deployment.landing_zones}}:
