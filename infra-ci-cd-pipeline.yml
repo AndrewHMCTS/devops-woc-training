@@ -196,3 +196,40 @@ stages:
           - publish: "$(Build.SourcesDirectory)/terraform/tfplan"
             artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
             displayName: "Publish Terraform Plan Artifact"
+
+  - ${{ each deployment in parameters.environment_components }}:
+    - ${{ each lz in deployment.landing_zones}}:
+      - stage: Deployment_${{ deployment.environment }}_${{ lz.landing_zone }}
+        displayName: 'Deploy Infrastructure to ${{ deployment.environment }}${{ lz.landing_zone }}'
+        dependsOn: Bootstrap_${{ deployment.environment }}_${{ lz.landing_zone }}
+        condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+
+        jobs:
+          - job: DeployInfrastructure
+            displayName: 'Deploy Infrastructure with Terraform Apply'
+            pool:
+              vmImage: 'ubuntu-latest'
+
+            steps:
+            - task: TerraformInstaller@0
+              inputs:
+                terraformVersion: 'latest'
+              displayName: 'Install Terraform'
+
+            - download: current
+              artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+              displayName: 'Download Terraform Plan'
+
+            - script: |
+                cd $(Build.SourcesDirectory)/terraform
+                terraform init -input=false \
+                  -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+                  -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+                  -backend-config="container_name=tf-backend" \
+                  -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
+              displayName: 'Terraform Init'
+
+            - script: |
+                cd "$(Pipeline.Workspace)/tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+                terraform apply -input=false -auto-approve tfplan
+              displayName: 'Terraform Apply'
