@@ -21,6 +21,7 @@ resource "azurerm_key_vault" "kv" {
       "Recover",
       "Backup",
       "Restore",
+      "Purge"
     ]
 
     key_permissions = [
