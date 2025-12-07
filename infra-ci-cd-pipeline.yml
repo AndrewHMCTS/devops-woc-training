@@ -266,12 +266,6 @@ stages:
               displayName: 'Terraform Init'
             
             - script: |
-                echo "Import existing Key Vault Access Policy"
-                terraform import azurerm_key_vault_access_policy.terraform \
-                  "/subscriptions/4e7d6a2d-ca04-447b-8d4b-dbd1113e2a40/resourceGroups/rg-filevault-sbox/providers/Microsoft.KeyVault/vaults/devops00-kv-sbox/objectId/37577362-01f7-4f90-b34e-1669285d7144"
-              displayName: 'Import existing KV Access Policy'
-
-            - script: |
                 cd $(Build.SourcesDirectory)/terraform
                 terraform apply -input=false -auto-approve tfplan
               displayName: 'Terraform Apply'
