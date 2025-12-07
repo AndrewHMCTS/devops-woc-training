@@ -66,6 +66,7 @@ stages:
       - stage: Manual_Approval_${{ deployment.environment }}
         displayName: 'Manual Approval for ${{ deployment.environment }}'
         dependsOn: Init
+        condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
         jobs:
           - job: waitForValidation
             displayName: Wait for Manual Validation
@@ -228,6 +229,17 @@ stages:
                   -backend-config="container_name=tf-backend" \
                   -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
               displayName: 'Terraform Init'
+
+            - script: |
+                cd $(Build.SourcesDirectory)/terraform
+                terraform plan \
+                  -out=tfplan \
+                  -var env=${{ deployment.environment }} \
+                  -var="subscription_id=${{ lz.Subscription_ID }}" \
+                  -var="client_id=${{ lz.Client_ID }}" \
+                  -lock=false     
+                terraform show -no-color tfplan > tfplan.txt
+              displayName: 'Terraform Plan'
 
             - script: |
                 cd "$(Pipeline.Workspace)/tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
