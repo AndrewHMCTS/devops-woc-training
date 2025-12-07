@@ -174,7 +174,7 @@ stages:
 
           - script: |
               cd $(Build.SourcesDirectory)/terraform
-              terraform format
+              terraform fmt
             displayName: 'Terraform Format'
 
           - script: |
@@ -228,7 +228,7 @@ stages:
 
             - script: |
                 cd $(Build.SourcesDirectory)/terraform
-                terraform format
+                terraform fmt
               displayName: 'Terraform Format'
 
             - script: |
