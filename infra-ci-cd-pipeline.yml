@@ -245,13 +245,6 @@ stages:
                     --tenant ${{ lz.Tenant_ID }}
                 az account set --subscription ${{ lz.Subscription_ID }}
                 echo "Account Subscription set to ${{ lz.Subscription_ID }}"
-
-
-                echo "Granting SP secret permissions on Key Vault"
-                az keyvault set-policy \
-                  --name ${{ lz.KeyVaultName }} \
-                  --spn ${{ lz.Client_ID }} \
-                  --secret-permissions get list set delete purge
               displayName: 'Azure CLI Login with Service Principal'
 
             - download: current
