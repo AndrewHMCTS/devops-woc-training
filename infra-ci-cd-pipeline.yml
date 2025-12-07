@@ -174,6 +174,7 @@ stages:
         
         - job: TerraformBootstrap
           displayName: 'Terraform Init, Validate, Lint & Plan'
+          dependsOn: GrantSPAccessToKV
           pool:
             vmImage: 'ubuntu-latest'
           steps:
@@ -181,6 +182,15 @@ stages:
             inputs:
               terraformVersion: 'latest'
             displayName: 'Install Terraform using TerraformInstaller@0'
+          
+          - script: |
+              echo "Logging in with SP..."
+              az login --service-principal \
+                  --username ${{ lz.Client_ID }} \
+                  --password ${{ lz.Client_Secret }} \
+                  --tenant ${{ lz.Tenant_ID }}
+              az account set --subscription ${{ lz.Subscription_ID }}
+              echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
           - script: |   
               cd $(Build.SourcesDirectory)/terraform           
