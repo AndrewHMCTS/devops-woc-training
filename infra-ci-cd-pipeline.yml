@@ -102,7 +102,6 @@ stages:
               echo "Checking subscriptions available to SP..."
               az account list --query "[].{name:name, id:id}" -o table
 
-              # Optionally set subscription explicitly
               az account set --subscription ${{ lz.Subscription_ID }}
               echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
@@ -151,11 +150,26 @@ stages:
                 --blob-endpoint $blob_endpoint
               echo "Success! tf-backend container created!"
             displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
-
+        
+        - job: TerraformBootstrap
+          displayName: 'Terraform Init, Validate, Lint & Plan'
+          dependsOn: BuildAndBootstrap
+          pool:
+            vmImage: 'ubuntu-latest'
+          steps:
           - task: TerraformInstaller@0
             inputs:
               terraformVersion: 'latest'
             displayName: 'Install Terraform using TerraformInstaller@0'
+          
+          - script: |
+              echo "Logging in with SP..."
+              az login --service-principal \
+                  --username ${{ lz.Client_ID }} \
+                  --password ${{ lz.Client_Secret }} \
+                  --tenant ${{ lz.Tenant_ID }}
+              az account set --subscription ${{ lz.Subscription_ID }}
+              echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
           - script: |   
               cd $(Build.SourcesDirectory)/terraform           
@@ -255,6 +269,28 @@ stages:
                 cd $(Build.SourcesDirectory)/terraform
                 terraform apply -input=false -auto-approve tfplan
               displayName: 'Terraform Apply'
+    
+          - job: GrantSPAccessToKV
+            displayName: 'Assign SP Access to KV'
+            dependsOn: DeployInfrastructure
+            pool:
+              vmImage: 'ubuntu-latest'
+            steps:
+            - script: |
+                echo "Logging in with SP..."
+                az login --service-principal \
+                    --username ${{ lz.Client_ID }} \
+                    --password ${{ lz.Client_Secret }} \
+                    --tenant ${{ lz.Tenant_ID }}
+                az account set --subscription ${{ lz.Subscription_ID }}
+                echo "Account Subscription set to ${{ lz.Subscription_ID }}"
+
+                echo "Assigning SP Key Vault Contributor Access"
+                az role assignment create \
+                  --assignee "${{ lz.Client_ID }}" \
+                  --role "Key Vault Contributor" \
+                  --scope "/subscriptions/${{ lz.Subscription_ID }}/resourceGroups/${{ lz.ResourceGroup }}/providers/Microsoft.KeyVault/vaults/${{ lz.KeyVaultName }}"
+              displayName: 'Assign SP Key Vault Contributor Role'
 
 
   # - ${{ each deployment in parameters.environment_components }}:
