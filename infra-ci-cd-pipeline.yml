@@ -7,7 +7,6 @@ pr:
   branches:
     include:
       - main
-  autoCancel: false
 
 pool:
   vmImage: 'ubuntu-latest'
