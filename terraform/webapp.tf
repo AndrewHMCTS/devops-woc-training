@@ -37,9 +37,9 @@ resource "azurerm_linux_web_app" "apps" {
 }
 
 resource "azurerm_role_assignment" "acr_pull" {
-  for_each = azurerm_linux_web_app.apps
+  for_each = local.webapps
 
-  principal_id         = each.value.identity[0].principal_id
+  principal_id         = azurerm_linux_web_app.apps[each.key].identity[0].principal_id
   role_definition_name = "AcrPull"
   scope                = azurerm_container_registry.acr.id
 }
