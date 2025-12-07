@@ -202,7 +202,7 @@ stages:
           - publish: "$(Build.SourcesDirectory)/terraform/tfplan"
             artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
             displayName: "Publish Terraform Plan Artifact"
-
+  
   - ${{ each deployment in parameters.environment_components }}:
     - ${{ each lz in deployment.landing_zones}}:
       - stage: Deployment_${{ deployment.environment }}_${{ lz.landing_zone }}
@@ -221,10 +221,6 @@ stages:
               inputs:
                 terraformVersion: 'latest'
               displayName: 'Install Terraform'
-
-            - download: current
-              artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
-              displayName: 'Download Terraform Plan'
           
             - script: |
                 echo "Logging in with SP..."
@@ -234,6 +230,17 @@ stages:
                     --tenant ${{ lz.Tenant_ID }}
                 az account set --subscription ${{ lz.Subscription_ID }}
                 echo "Account Subscription set to ${{ lz.Subscription_ID }}"
+              displayName: 'Azure CLI Login with Service Principal'
+
+            - download: current
+              artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+              patterns: '**/tfplan'
+              displayName: 'Download Terraform Plan'
+
+            - script: |
+                cp "$(Pipeline.Workspace)/tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}/tfplan" \
+                  "$(Build.SourcesDirectory)/terraform/tfplan"
+              displayName: 'Copy plan back to terraform directory'
 
             - script: |
                 cd $(Build.SourcesDirectory)/terraform
@@ -243,24 +250,71 @@ stages:
                   -backend-config="container_name=tf-backend" \
                   -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
               displayName: 'Terraform Init'
-          
-            - script: |
-                cd $(Build.SourcesDirectory)/terraform
-                terraform fmt
-              displayName: 'Terraform Format'
 
             - script: |
                 cd $(Build.SourcesDirectory)/terraform
-                terraform plan \
-                  -out=tfplan \
-                  -var env=${{ deployment.environment }} \
-                  -var="subscription_id=${{ lz.Subscription_ID }}" \
-                  -var="client_id=${{ lz.Client_ID }}" \
-                  -lock=false     
-                terraform show -no-color tfplan > tfplan.txt
-              displayName: 'Terraform Plan'
-
-            - script: |
-                cd "$(Pipeline.Workspace)/tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
                 terraform apply -input=false -auto-approve tfplan
               displayName: 'Terraform Apply'
+
+
+  # - ${{ each deployment in parameters.environment_components }}:
+  #   - ${{ each lz in deployment.landing_zones}}:
+  #     - stage: Deployment_${{ deployment.environment }}_${{ lz.landing_zone }}
+  #       displayName: 'Deploy Infrastructure to ${{ deployment.environment }}${{ lz.landing_zone }}'
+  #       dependsOn: Bootstrap_${{ deployment.environment }}_${{ lz.landing_zone }}
+  #       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+  #       jobs:
+  #         - job: DeployInfrastructure
+  #           displayName: 'Deploy Infrastructure with Terraform Apply'
+  #           pool:
+  #             vmImage: 'ubuntu-latest'
+
+  #           steps:
+  #           - task: TerraformInstaller@0
+  #             inputs:
+  #               terraformVersion: 'latest'
+  #             displayName: 'Install Terraform'
+
+  #           - download: current
+  #             artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+  #             displayName: 'Download Terraform Plan'
+          
+  #           - script: |
+  #               echo "Logging in with SP..."
+  #               az login --service-principal \
+  #                   --username ${{ lz.Client_ID }} \
+  #                   --password ${{ lz.Client_Secret }} \
+  #                   --tenant ${{ lz.Tenant_ID }}
+  #               az account set --subscription ${{ lz.Subscription_ID }}
+  #               echo "Account Subscription set to ${{ lz.Subscription_ID }}"
+
+  #           - script: |
+  #               cd $(Build.SourcesDirectory)/terraform
+  #               terraform init -input=false \
+  #                 -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+  #                 -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+  #                 -backend-config="container_name=tf-backend" \
+  #                 -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
+  #             displayName: 'Terraform Init'
+          
+  #           - script: |
+  #               cd $(Build.SourcesDirectory)/terraform
+  #               terraform fmt
+  #             displayName: 'Terraform Format'
+
+  #           - script: |
+  #               cd $(Build.SourcesDirectory)/terraform
+  #               terraform plan \
+  #                 -out=tfplan \
+  #                 -var env=${{ deployment.environment }} \
+  #                 -var="subscription_id=${{ lz.Subscription_ID }}" \
+  #                 -var="client_id=${{ lz.Client_ID }}" \
+  #                 -lock=false     
+  #               terraform show -no-color tfplan > tfplan.txt
+  #             displayName: 'Terraform Plan'
+
+  #           - script: |
+  #               cd "$(Pipeline.Workspace)/tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+  #               terraform apply -input=false -auto-approve tfplan
+  #             displayName: 'Terraform Apply'
