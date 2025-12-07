@@ -151,30 +151,30 @@ stages:
               echo "Success! tf-backend container created!"
             displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
         
-        - job: GrantSPAccessToKV
-          displayName: 'Assign SP Access to KV'
-          pool:
-            vmImage: 'ubuntu-latest'
-          steps:
-          - script: |
-              echo "Logging in with SP..."
-              az login --service-principal \
-                  --username ${{ lz.Client_ID }} \
-                  --password ${{ lz.Client_Secret }} \
-                  --tenant ${{ lz.Tenant_ID }}
-              az account set --subscription ${{ lz.Subscription_ID }}
-              echo "Account Subscription set to ${{ lz.Subscription_ID }}"
+        # - job: GrantSPAccessToKV
+        #   displayName: 'Assign SP Access to KV'
+        #   pool:
+        #     vmImage: 'ubuntu-latest'
+        #   steps:
+        #   - script: |
+        #       echo "Logging in with SP..."
+        #       az login --service-principal \
+        #           --username ${{ lz.Client_ID }} \
+        #           --password ${{ lz.Client_Secret }} \
+        #           --tenant ${{ lz.Tenant_ID }}
+        #       az account set --subscription ${{ lz.Subscription_ID }}
+        #       echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-              echo "Assigning SP Key Vault Contributor Access"
-              az role assignment create \
-                --assignee "${{ lz.Client_ID }}" \
-                --role "Key Vault Contributor" \
-                --scope "/subscriptions/${{ lz.Subscription_ID }}/resourceGroups/${{ lz.ResourceGroup }}/providers/Microsoft.KeyVault/vaults/${{ lz.KeyVaultName }}"
-            displayName: 'Assign SP Key Vault Contributor Role'
+        #       echo "Assigning SP Key Vault Contributor Access"
+        #       az role assignment create \
+        #         --assignee "${{ lz.Client_ID }}" \
+        #         --role "Key Vault Contributor" \
+        #         --scope "/subscriptions/${{ lz.Subscription_ID }}/resourceGroups/${{ lz.ResourceGroup }}/providers/Microsoft.KeyVault/vaults/${{ lz.KeyVaultName }}"
+        #     displayName: 'Assign SP Key Vault Contributor Role'
         
         - job: TerraformBootstrap
           displayName: 'Terraform Init, Validate, Lint & Plan'
-          dependsOn: GrantSPAccessToKV
+          # dependsOn: GrantSPAccessToKV
           pool:
             vmImage: 'ubuntu-latest'
           steps:
