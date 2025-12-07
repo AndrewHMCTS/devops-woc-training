@@ -103,9 +103,9 @@ stages:
 
               # Optionally set subscription explicitly
               az account set --subscription ${{ lz.Subscription_ID }}
-              echo "Account Subscription set to ${{ lz.Subscription_ID }}""
+              echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-              echo "Confirm current subscription...""
+              echo "Confirm current subscription..."
               az account show --output table
               echo "Success! Logged in with SP ${{ lz.Client_ID }}"
 
@@ -149,85 +149,87 @@ stages:
                 --account-key $storage_account_key \
                 --blob-endpoint $blob_endpoint
               echo "Success! tf-backend container created!"
-            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)'       
+            displayName: 'Bootstrap TF backend storage (Azure CLI login with SP)' 
 
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: 'latest'
+            displayName: 'Install Terraform using TerraformInstaller@0'
 
-  #       - script: |
-  #           cd $(Build.SourcesDirectory)
-  #           docker compose build
-  #         displayName: 'Build Docker Images'
-
-
-  # - stage: Linting
-  #   displayName: 'Run Linting'
-  #   dependsOn: Init
-  #   jobs:
-  #     - job: LintPython
-  #       displayName: 'Lint Python Code to PEP8 standards'
-  #       steps:
-  #         - task: UsePythonVersion@0
-  #           displayName: 'Use Python 3.x'
-  #           inputs:
-  #             versionSpec: '3.x'
-
-  #         - script: |
-  #             pip install --upgrade pip
-  #             pip install uv
-  #             uv tool install ruff
-
-  #             cd $(Build.SourcesDirectory)/src/backend/app
-
-  #             uv run ruff format .
-  #             uv run ruff check --fix .
-  #           displayName: 'Code linting'
-      
-  #     # - job: SonarQubeAnalysis
-  #     #   displayName: 'Run SonarScanner CLI'
-  #     #   steps:
-  #     #     - script: |
-  #     #         export SONAR_SCANNER_VERSION=7.2.0.5079
-  #     #         export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux-x64
-  #     #         curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip \
-  #     #           https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux-x64.zip
-  #     #         unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-  #     #         export PATH=$SONAR_SCANNER_HOME/bin:$PATH
-
-  #     #         sonar-scanner \
-  #     #           -Dsonar.organization=ado-sonarqube \
-  #     #           -Dsonar.projectKey=ado-sonarqube_ad \
-  #     #           -Dsonar.login=$(SONAR_TOKEN)
-  #     #       displayName: 'Install and run SonarScanner'
-  #     #       env:
-  #     #         SONAR_TOKEN: $(SONAR_TOKEN)
+          - script: |   
+              cd $(Build.SourcesDirectory)/terraform           
+              terraform --version
+              terraform init -input=false \
+                -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+                -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+                -backend-config="container_name=tf-backend" \
+                -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
+            displayName: 'Terraform Init & initialise backend'
           
-  # # - stage: Testing
-  # #   displayName: 'Run Unit Tests'
-  # #   dependsOn: Linting
-  # #   jobs:
-  # #     - job: RunTests
-  # #       displayName: 'Unit Tests'
-  # #       steps:
-  # #         - task: UsePythonVersion@0
-  # #           displayName: 'Use Python 3.x'
-  # #           inputs:
-  # #             versionSpec: '3.x'
+          - script: |
+              curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+              tflint --version
+            displayName: 'Install TFLint'
 
-  # #         - script: |
-  # #             pip install --upgrade pip
-  # #             pip install pytest
-  # #             pytest $(Build.SourcesDirectory)/Python/test_maths_addition.py
-  # #           displayName: 'Run pytest on maths.py' #point to new back end python
-      
-  # - stage: Build
-  #   displayName: 'Build Docker Images'
-  #   dependsOn: Linting
-  #   jobs:
-  #     - job: BuildAndBootstrap
-  #       displayName: 'Build Docker & Bootstrap TF Backend'
-  #       pool:
-  #         vmImage: 'ubuntu-latest'
-  #       steps:
-  #         - script: |
-  #             cd $(Build.SourcesDirectory)
-  #             docker compose build
-  #           displayName: 'Build Docker Images'
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              terraform validate
+            displayName: 'Terraform Validate'
+
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              tflint --init
+              tflint
+            displayName: 'Terraform Lint'
+
+          - script: |
+              cd $(Build.SourcesDirectory)/terraform
+              terraform plan \
+                -out=tfplan \
+                -var env=${{ deployment.environment }} \
+                -var="subscription_id=${{ lz.Subscription_ID }}" \
+                -var="client_id=${{ lz.Client_ID }}" \
+                -lock=false     
+              terraform show -no-color tfplan > tfplan.txt
+            displayName: 'Terraform Plan'
+          
+          - publish: "$(Build.SourcesDirectory)/terraform/tfplan"
+            artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+            displayName: "Publish Terraform Plan Artifact"
+
+  - ${{ each deployment in parameters.environment_components }}:
+    - ${{ each lz in deployment.landing_zones}}:
+      - stage: Deployment_${{ deployment.environment }}_${{ lz.landing_zone }}
+        displayName: 'Deploy Infrastructure to ${{ deployment.environment }}${{ lz.landing_zone }}'
+        dependsOn: Bootstrap_${{ deployment.environment }}_${{ lz.landing_zone }}
+        condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+
+        jobs:
+          - job: DeployInfrastructure
+            displayName: 'Deploy Infrastructure with Terraform Apply'
+            pool:
+              vmImage: 'ubuntu-latest'
+
+            steps:
+            - task: TerraformInstaller@0
+              inputs:
+                terraformVersion: 'latest'
+              displayName: 'Install Terraform'
+
+            - download: current
+              artifact: "tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+              displayName: 'Download Terraform Plan'
+
+            - script: |
+                cd $(Build.SourcesDirectory)/terraform
+                terraform init -input=false \
+                  -backend-config="resource_group_name=${{ lz.ResourceGroup }}" \
+                  -backend-config="storage_account_name=${{ lz.StorageAccount }}" \
+                  -backend-config="container_name=tf-backend" \
+                  -backend-config="key=${{ lz.landing_zone }}/terraform.tfstate"
+              displayName: 'Terraform Init'
+
+            - script: |
+                cd "$(Pipeline.Workspace)/tfplan_${{ deployment.environment }}_${{ lz.landing_zone }}"
+                terraform apply -input=false -auto-approve tfplan
+              displayName: 'Terraform Apply'

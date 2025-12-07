@@ -3,17 +3,17 @@ variable "location" {
   default = "uksouth"
 }
 
-variable "resource_group_name" {
-  type    = string
-  default = "rg-filevault"
+variable "env" {
+  description = "Environment name (sbox, stg, prod)"
+  type        = string
 }
 
-variable "acr_name" {
-  type    = string
-  default = "filevaultacr"
+variable "subscription_id" {
+  description = "Azure Subscription ID"
+  type        = string
 }
 
-variable "aks_name" {
-  type    = string
-  default = "filevault-aks"
+variable "client_id" {
+  description = "Azure Client ID"
+  type        = string
 }
