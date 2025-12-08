@@ -85,16 +85,6 @@ stages:
                 az account set --subscription ${{ lz.Subscription_ID }}
                 echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-                echo "Fetching credentials for KeyVault: ${{ lz.KeyVaultName }}"
-                ACR_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-USERNAME --query value -o tsv)
-                ACR_PASS=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-PASSWORD --query value -o tsv)
-
-                echo "##vso[task.setvariable variable=acrUser;issecret=true]$ACR_USER"
-                echo "##vso[task.setvariable variable=acrPass;issecret=true]$ACR_PASS"
-              displayName: "Login + Fetch secrets from Key Vault"
-
-            - script: |
-                set -euo pipefail
                 echo "Building backend image..."
                 cd $(Build.SourcesDirectory)
 
@@ -106,15 +96,15 @@ stages:
 
                 echo "Pushing backend image to ACR..."
                 docker push filevaultacrsbox.azurecr.io/backend:${TAG}
-              displayName: 'Build & Push Backend'
-        
-            - script: |
-                set -euo pipefail
+
                 echo "Deploying backend image to Web App: devopswoc-backend-${{ deployment.environment }} ..."
 
-                echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
-                TAG=$(Build.BuildId)
-                echo "Using image tag: $TAG"
+                echo "Fetching credentials for KeyVault: ${{ lz.KeyVaultName }}"
+                ACR_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-USERNAME --query value -o tsv)
+                ACR_PASS=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-PASSWORD --query value -o tsv)
+
+                echo "##vso[task.setvariable variable=acrUser;issecret=true]$ACR_USER"
+                echo "##vso[task.setvariable variable=acrPass;issecret=true]$ACR_PASS"
 
                 az webapp config container set \
                   --name devopswoc-backend-${{ deployment.environment }} \
