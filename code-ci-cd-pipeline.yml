@@ -85,20 +85,6 @@ stages:
                 az account set --subscription ${{ lz.Subscription_ID }}
                 echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-                echo "Building backend image..."
-                cd $(Build.SourcesDirectory)
-
-                echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
-                TAG=$(Build.BuildId)
-                echo "Using image tag: $TAG"
-
-                docker build -f Dockerfile.backend -t filevaultacrsbox.azurecr.io/backend:${TAG} ./backend
-
-                echo "Pushing backend image to ACR..."
-                docker push filevaultacrsbox.azurecr.io/backend:${TAG}
-
-                echo "Deploying backend image to Web App: devopswoc-backend-${{ deployment.environment }} ..."
-
                 echo "Fetching credentials for KeyVault: ${{ lz.KeyVaultName }}"
                 ACR_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-USERNAME --query value -o tsv)
                 ACR_PASS=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-PASSWORD --query value -o tsv)
@@ -106,13 +92,26 @@ stages:
                 echo "##vso[task.setvariable variable=acrUser;issecret=true]$ACR_USER"
                 echo "##vso[task.setvariable variable=acrPass;issecret=true]$ACR_PASS"
 
+                echo "Building backend image..."
+                cd $(Build.SourcesDirectory)
+
+                echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
+                TAG=$(Build.BuildId)
+                echo "Using image tag: $TAG"
+
+                docker build -f Dockerfile.backend -t filevaultacrsbox.azurecr.io/backend:${TAG} ./src/backend
+
+                echo "Pushing backend image to ACR..."
+                docker push filevaultacrsbox.azurecr.io/backend:${TAG}
+
+                echo "Deploying backend image to Web App: devopswoc-backend-${{ deployment.environment }} ..."
                 az webapp config container set \
-                  --name devopswoc-backend-${{ deployment.environment }} \
+                  --name devopswoc-backend \
                   --resource-group ${{ lz.ResourceGroup }} \
-                  --docker-custom-image-name filevaultacrsbox.azurecr.io/backend:${TAG} \
-                  --docker-registry-server-url https://filevaultacrsbox.azurecr.io \
-                  --docker-registry-server-user "$ACR_USER" \
-                  --docker-registry-server-password "$ACR_PASS"
+                  --container-image-name filevaultacrsbox.azurecr.io/backend:${TAG} \
+                  --container-registry-url https://filevaultacrsbox.azurecr.io \
+                  --container-registry-user "$ACR_USER" \
+                  --container-user-password "$ACR_PASS"
               displayName: 'Deploy Backend to Web App'
 
           - job: BuildFrontend
