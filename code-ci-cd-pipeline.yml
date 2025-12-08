@@ -99,7 +99,7 @@ stages:
                 TAG=$(Build.BuildId)
                 echo "Using image tag: $TAG"
 
-                docker build -f Dockerfile.backend -t filevaultacrsbox.azurecr.io/backend:${TAG} ./src/backend
+                docker build -f ./Dockerfile.backend -t filevaultacrsbox.azurecr.io/backend:${TAG} .
 
                 echo "Pushing backend image to ACR..."
                 docker push filevaultacrsbox.azurecr.io/backend:${TAG}
