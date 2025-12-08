@@ -36,7 +36,7 @@ resource "azurerm_linux_web_app" "apps" {
     DB_PASSWORD   = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.pg_password.id})"
     DB_HOST       = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_host.id})"
     DB_NAME       = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_name.id})"
-    DB_PORT     = "5432"
+    DB_PORT       = "5432"
     WEBSITES_PORT = each.value.port
   }
 }
