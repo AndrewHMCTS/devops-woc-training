@@ -1,12 +1,12 @@
-# trigger:
-#   branches:
-#     include:
-#       - main
+trigger:
+  branches:
+    include:
+      - main
 
-# pr:
-#   branches:
-#     include:
-#       - main
+pr:
+  branches:
+    include:
+      - main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -321,7 +321,7 @@ stages:
       
           - script: |
               set -euo pipefail
-              echo "Deploying backend image to Web App: devopswoc-backend-${{ deployment.environment }} ..."
+              echo "Deploying backend image to Web App: devopswoc-backend..."
               az webapp config container set \
                 --name devopswoc-backend-${{ deployment.environment }} \
                 --resource-group ${{ lz.ResourceGroup }} \
@@ -374,7 +374,7 @@ stages:
       
           - script: |
               set -euo pipefail
-              echo "Deploying frontend image to Web App: devopswoc-frontend-${{ deployment.environment }} ..."
+              echo "Deploying frontend image to Web App: devopswoc-frontend..."
               az webapp config container set \
                 --name devopswoc-frontend-${{ deployment.environment }} \
                 --resource-group ${{ lz.ResourceGroup }} \
