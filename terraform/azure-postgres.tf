@@ -14,7 +14,7 @@ resource "azurerm_postgresql_flexible_server" "pg" {
   sku_name               = "GP_Standard_D4s_v3"
   storage_mb             = 32768
   backup_retention_days  = 7
-  zone = "2"
+  zone                   = "2"
 }
 
 resource "azurerm_postgresql_flexible_server_database" "db" {
