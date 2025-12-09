@@ -110,8 +110,6 @@ stages:
                   --resource-group ${{ lz.ResourceGroup }} \
                   --docker-custom-image-name filevaultacrsbox.azurecr.io/backend:${TAG} \
                   --docker-registry-server-url https://filevaultacrsbox.azurecr.io \
-                  --docker-registry-server-user "$ACR_USER" \
-                  --docker-registry-server-password "$ACR_PASS"
               displayName: 'Deploy Backend to Web App'
 
           - job: BuildFrontend
@@ -156,10 +154,11 @@ stages:
                   --name devopswoc-frontend \
                   --resource-group ${{ lz.ResourceGroup }} \
                   --docker-custom-image-name filevaultacrsbox.azurecr.io/frontend:${TAG} \
-                  --docker-registry-server-url https://filevaultacrsbox.azurecr.io \
-                  --docker-registry-server-user "$ACR_USER" \
-                  --docker-registry-server-password "$ACR_PASS"
+                  --docker-registry-server-url https://filevaultacrsbox.azurecr.io 
               displayName: 'Deploy frontend to Web App'
+
+                  # --docker-registry-server-user "$ACR_USER" \
+                  # --docker-registry-server-password "$ACR_PASS"
 
           # - job: BuildFrontend
           #   displayName: 'Build Frontend'

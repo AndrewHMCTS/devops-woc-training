@@ -1,7 +1,6 @@
 resource "random_password" "pg_password" {
   length           = 16
-  special          = true
-  override_special = "!@#$%&*()-_=+"
+  special          = false
 }
 
 resource "azurerm_postgresql_flexible_server" "pg" {
