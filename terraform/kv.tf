@@ -94,7 +94,7 @@ resource "azurerm_key_vault_secret" "db_port" {
 }
 
 resource "azurerm_key_vault_secret" "database_url" {
-  name  = "database-url"
-  value = "postgresql://${azurerm_postgresql_flexible_server.pg.administrator_login}:${random_password.pg_password.result}@${azurerm_postgresql_flexible_server.pg.fqdn}:5432/${azurerm_postgresql_flexible_server_database.db.name}"
+  name         = "database-url"
+  value        = "postgresql://${azurerm_postgresql_flexible_server.pg.administrator_login}:${random_password.pg_password.result}@${azurerm_postgresql_flexible_server.pg.fqdn}:5432/${azurerm_postgresql_flexible_server_database.db.name}"
   key_vault_id = azurerm_key_vault.kv.id
 }
