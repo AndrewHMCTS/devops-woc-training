@@ -32,21 +32,21 @@ resource "azurerm_linux_web_app" "apps" {
   }
 
   app_settings = {
-    # DB_USER       = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.pg_user.id})"
-    # DB_PASSWORD   = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.pg_password.id})"
-    # DB_HOST       = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_host.id})"
-    # DB_NAME       = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_name.id})"
-    # DB_PORT       = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_port.id})"
-    # DATABASE_URL  = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.database_url.id})"
-    DB_USER           = azurerm_key_vault_secret.pg_user.value
-    DB_PASSWORD       = azurerm_key_vault_secret.pg_password.value
-    DB_HOST           = azurerm_key_vault_secret.db_host.value
-    DB_NAME           = azurerm_key_vault_secret.db_name.value
-    DB_PORT           = azurerm_key_vault_secret.db_port.value
-    DATABASE_URL      = azurerm_key_vault_secret.database_url.value
-    TEST_DATABASE_URL = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.database_url.id})"
-    SECRET_KEY        = azurerm_key_vault_secret.secret_key.value
-    WEBSITES_PORT     = each.value.port
+    DB_USER      = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.pg_user.id})"
+    DB_PASSWORD  = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.pg_password.id})"
+    DB_HOST      = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_host.id})"
+    DB_NAME      = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_name.id})"
+    DB_PORT      = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_port.id})"
+    DATABASE_URL = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.database_url.id})"
+    # DB_USER           = azurerm_key_vault_secret.pg_user.value
+    # DB_PASSWORD       = azurerm_key_vault_secret.pg_password.value
+    # DB_HOST           = azurerm_key_vault_secret.db_host.value
+    # DB_NAME           = azurerm_key_vault_secret.db_name.value
+    # DB_PORT           = azurerm_key_vault_secret.db_port.value
+    # DATABASE_URL      = azurerm_key_vault_secret.database_url.value
+    # TEST_DATABASE_URL = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.database_url.id})"
+    SECRET_KEY    = azurerm_key_vault_secret.secret_key.value
+    WEBSITES_PORT = each.value.port
   }
 }
 

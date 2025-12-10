@@ -6,7 +6,7 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-# Subnet for App Service VNet Integration (Web App connects here)
+# Subnet for App Service VNet Integration
 resource "azurerm_subnet" "snet_appservice" {
   name                 = "snet-appservice"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -22,7 +22,7 @@ resource "azurerm_subnet" "snet_appservice" {
   }
 }
 
-# Subnet for PostgreSQL Flexible Server (must be dedicated and delegated)
+# Subnet for PostgreSQL Flexible Server (private)
 resource "azurerm_subnet" "snet_postgresql" {
   name                 = "snet-postgresql"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -40,7 +40,7 @@ resource "azurerm_subnet" "snet_postgresql" {
   }
 }
 
-# Subnet for Private Endpoints (NO delegation allowed)
+# Subnet for Private Endpoints (currently empty; we will not use PE for Key Vault)
 resource "azurerm_subnet" "snet_private_endpoints" {
   name                 = "snet-private-endpoints"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -56,7 +56,7 @@ resource "azurerm_private_dns_zone" "pg" {
 
 # Link PostgreSQL DNS Zone to VNet
 resource "azurerm_private_dns_zone_virtual_network_link" "pg_link" {
-  name                  = "pg-dns-link"
+  name                  = "pg-dns-link-${var.env}"
   resource_group_name   = azurerm_resource_group.rg.name
   virtual_network_id    = azurerm_virtual_network.vnet.id
   private_dns_zone_name = azurerm_private_dns_zone.pg.name
