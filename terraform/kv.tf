@@ -50,8 +50,8 @@ resource "azurerm_key_vault" "kv" {
 
 resource "azurerm_private_endpoint" "kv_pe" {
   name                = "kv-pe-${var.env}"
-  location            = azurerm_resource_group.rg_sbox.location
-  resource_group_name = azurerm_resource_group.rg_sbox.name
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
   subnet_id           = azurerm_subnet.snet_pe.id
 
   private_service_connection {

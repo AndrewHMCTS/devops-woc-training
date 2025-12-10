@@ -1,8 +1,3 @@
-resource "azurerm_resource_group" "rg_sbox" {
-  name     = "devops00-rg-sbox"
-  location = "East US"
-}
-
 resource "azurerm_virtual_network" "vnet" {
   name                = "devops00-vnet-${var.env}"
   address_space       = ["10.0.0.0/16"]
