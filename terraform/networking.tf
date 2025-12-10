@@ -49,18 +49,18 @@ resource "azurerm_subnet" "snet_postgresql" {
 # }
 
 # Private DNS Zone for PostgreSQL
-resource "azurerm_private_dns_zone" "pg" {
-  name                = "privatelink.postgres.database.azure.com"
-  resource_group_name = azurerm_resource_group.rg.name
-}
+# resource "azurerm_private_dns_zone" "pg" {
+#   name                = "privatelink.postgres.database.azure.com"
+#   resource_group_name = azurerm_resource_group.rg.name
+# }
 
 # Link PostgreSQL DNS Zone to VNet
-resource "azurerm_private_dns_zone_virtual_network_link" "pg_link" {
-  name                  = "pg-dns-link-${var.env}"
-  resource_group_name   = azurerm_resource_group.rg.name
-  virtual_network_id    = azurerm_virtual_network.vnet.id
-  private_dns_zone_name = azurerm_private_dns_zone.pg.name
-}
+# resource "azurerm_private_dns_zone_virtual_network_link" "pg_link" {
+#   name                  = "pg-dns-link-${var.env}"
+#   resource_group_name   = azurerm_resource_group.rg.name
+#   virtual_network_id    = azurerm_virtual_network.vnet.id
+#   private_dns_zone_name = azurerm_private_dns_zone.pg.name
+# }
 
 resource "azurerm_private_endpoint" "pg_pe" {
   name                = "pg-pe"
@@ -76,17 +76,17 @@ resource "azurerm_private_endpoint" "pg_pe" {
   }
 }
 
-resource "azurerm_private_dns_a_record" "pg_record" {
-  name                = azurerm_postgresql_flexible_server.pg.name
-  zone_name           = azurerm_private_dns_zone.pg.name
-  resource_group_name = azurerm_resource_group.rg.name
-  ttl                 = 300
-  records             = [azurerm_private_endpoint.pg_pe.private_service_connection[0].private_ip_address]
-}
+# resource "azurerm_private_dns_a_record" "pg_record" {
+#   name                = azurerm_postgresql_flexible_server.pg.name
+#   zone_name           = azurerm_private_dns_zone.pg.name
+#   resource_group_name = azurerm_resource_group.rg.name
+#   ttl                 = 300
+#   records             = [azurerm_private_endpoint.pg_pe.private_service_connection[0].private_ip_address]
+# }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "link" {
-  name                  = "pg-dns-link"
-  resource_group_name   = azurerm_resource_group.rg.name
-  virtual_network_id    = azurerm_virtual_network.vnet.id
-  private_dns_zone_name = azurerm_private_dns_zone.pg.name
-}
+# resource "azurerm_private_dns_zone_virtual_network_link" "link" {
+#   name                  = "pg-dns-link"
+#   resource_group_name   = azurerm_resource_group.rg.name
+#   virtual_network_id    = azurerm_virtual_network.vnet.id
+#   private_dns_zone_name = azurerm_private_dns_zone.pg.name
+# }
