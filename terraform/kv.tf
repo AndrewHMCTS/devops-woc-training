@@ -1,3 +1,4 @@
+
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "kv" {
@@ -9,13 +10,12 @@ resource "azurerm_key_vault" "kv" {
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
 
+  # Allow trusted Microsoft services to access (App Service, DevOps, etc.)
   network_acls {
+    default_action = "Allow"
     bypass         = "AzureServices"
-    default_action = "Deny"
-    virtual_network_subnet_ids = [
-      azurerm_subnet.snet_pe.id
-    ]
   }
+  
 
   access_policy {
     tenant_id = data.azurerm_client_config.current.tenant_id
@@ -43,22 +43,8 @@ resource "azurerm_key_vault" "kv" {
       "Sign",
       "Verify",
       "WrapKey",
-      "UnwrapKey",
+      "UnwrapKey"
     ]
-  }
-}
-
-resource "azurerm_private_endpoint" "kv_pe" {
-  name                = "kv-pe-${var.env}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  subnet_id           = azurerm_subnet.snet_pe.id
-
-  private_service_connection {
-    name                           = "kv-psc"
-    private_connection_resource_id = azurerm_key_vault.kv.id
-    is_manual_connection           = false
-    subresource_names              = ["vault"]
   }
 }
 
