@@ -96,7 +96,7 @@ stages:
                 cd $(Build.SourcesDirectory)
 
                 echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
-                TAG=$(Build.BuildId)
+                TAG=latest
                 echo "Using image tag: $TAG"
 
                 docker build -f ./Dockerfile.backend -t filevaultacrsbox.azurecr.io/backend:${TAG} .
@@ -141,7 +141,7 @@ stages:
                 cd $(Build.SourcesDirectory)
 
                 echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
-                TAG=$(Build.BuildId)
+                TAG='latest'
                 echo "Using image tag: $TAG"
 
                 docker build -f ./Dockerfile.frontend -t filevaultacrsbox.azurecr.io/frontend:${TAG} .
