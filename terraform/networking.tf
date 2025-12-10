@@ -41,12 +41,12 @@ resource "azurerm_subnet" "snet_postgresql" {
 }
 
 # Subnet for Private Endpoints (currently empty; we will not use PE for Key Vault)
-resource "azurerm_subnet" "snet_private_endpoints" {
-  name                 = "snet-private-endpoints"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.0.3.0/24"]
-}
+# resource "azurerm_subnet" "snet_private_endpoints" {
+#   name                 = "snet-private-endpoints"
+#   resource_group_name  = azurerm_resource_group.rg.name
+#   virtual_network_name = azurerm_virtual_network.vnet.name
+#   address_prefixes     = ["10.0.3.0/24"]
+# }
 
 # Private DNS Zone for PostgreSQL
 resource "azurerm_private_dns_zone" "pg" {
@@ -66,7 +66,7 @@ resource "azurerm_private_endpoint" "pg_pe" {
   name                = "pg-pe"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  subnet_id           = azurerm_subnet.snet_private_endpoints.id
+  subnet_id           = azurerm_subnet.snet_postgresql.id
 
   private_service_connection {
     name                           = "pg-psc"
