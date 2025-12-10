@@ -12,7 +12,7 @@ resource "azurerm_key_vault" "kv" {
 
   # Allow trusted Microsoft services to access (App Service, DevOps, etc.)
   network_acls {
-    default_action = "Deny"
+    default_action = "Allow"
     bypass         = "AzureServices"
   }
 
