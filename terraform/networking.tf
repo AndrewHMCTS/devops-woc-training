@@ -66,7 +66,7 @@ resource "azurerm_private_endpoint" "pg_pe" {
   name                = "pg-pe"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  subnet_id           = azurerm_subnet.snet_pe.id
+  subnet_id           = azurerm_subnet.snet_private_endpoints.id
 
   private_service_connection {
     name                           = "pg-psc"

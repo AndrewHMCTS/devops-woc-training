@@ -17,8 +17,6 @@ resource "azurerm_postgresql_flexible_server" "pg" {
   delegated_subnet_id           = azurerm_subnet.snet_postgresql.id
   private_dns_zone_id           = azurerm_private_dns_zone.pg.id
   public_network_access_enabled = false
-  administrator_login = "pgadmin"
-  administrator_password = random_password.pg_password.result
 
   depends_on = [
     azurerm_private_dns_zone_virtual_network_link.pg_link
