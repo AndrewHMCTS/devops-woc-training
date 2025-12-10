@@ -13,7 +13,7 @@ resource "azurerm_key_vault" "kv" {
     bypass         = "AzureServices"
     default_action = "Deny"
     virtual_network_subnet_ids = [
-      azurerm_subnet.snet_pe.id
+      azurerm_subnet.snet_appservice.id
     ]
   }
 
