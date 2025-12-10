@@ -9,6 +9,14 @@ resource "azurerm_key_vault" "kv" {
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
 
+  network_acls {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+    virtual_network_subnet_ids = [
+      azurerm_subnet.snet_pe.id
+    ]
+  }
+
   access_policy {
     tenant_id = data.azurerm_client_config.current.tenant_id
     object_id = data.azurerm_client_config.current.object_id
@@ -37,6 +45,20 @@ resource "azurerm_key_vault" "kv" {
       "WrapKey",
       "UnwrapKey",
     ]
+  }
+}
+
+resource "azurerm_private_endpoint" "kv_pe" {
+  name                = "kv-pe-${var.env}"
+  location            = azurerm_resource_group.rg_sbox.location
+  resource_group_name = azurerm_resource_group.rg_sbox.name
+  subnet_id           = azurerm_subnet.snet_pe.id
+
+  private_service_connection {
+    name                           = "kv-psc"
+    private_connection_resource_id = azurerm_key_vault.kv.id
+    is_manual_connection           = false
+    subresource_names              = ["vault"]
   }
 }
 
