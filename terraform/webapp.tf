@@ -56,6 +56,8 @@ resource "azurerm_app_service_virtual_network_swift_connection" "apps_vnet" {
 
   app_service_id = each.value.id
   subnet_id      = azurerm_subnet.snet_appservice.id
+
+  depends_on = [azurerm_linux_web_app.apps]
 }
 
 resource "azurerm_role_assignment" "acr_pull" {
