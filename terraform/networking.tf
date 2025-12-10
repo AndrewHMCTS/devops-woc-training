@@ -49,10 +49,10 @@ resource "azurerm_subnet" "snet_postgresql" {
 # }
 
 # Private DNS Zone for PostgreSQL
-# resource "azurerm_private_dns_zone" "pg" {
-#   name                = "privatelink.postgres.database.azure.com"
-#   resource_group_name = azurerm_resource_group.rg.name
-# }
+resource "azurerm_private_dns_zone" "pg" {
+  name                = "privatelink.postgres.database.azure.com"
+  resource_group_name = azurerm_resource_group.rg.name
+}
 
 # Link PostgreSQL DNS Zone to VNet
 # resource "azurerm_private_dns_zone_virtual_network_link" "pg_link" {
