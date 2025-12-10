@@ -54,7 +54,7 @@ resource "azurerm_role_assignment" "sp_acr_roles" {
 
 resource "azurerm_role_assignment" "sp_webapp_contributor" {
   scope                = azurerm_resource_group.rg.id
-  role_definition_name = "Website Contributor"  
+  role_definition_name = "Website Contributor"
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
@@ -62,4 +62,14 @@ resource "azurerm_role_assignment" "sp_contributor_rg" {
   scope                = azurerm_resource_group.rg.id
   role_definition_name = "Contributor"
   principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_key_vault_access_policy" "webapp_kv" {
+  for_each = local.webapps
+
+  key_vault_id = azurerm_key_vault.kv.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azurerm_linux_web_app.apps[each.key].identity[0].principal_id
+
+  secret_permissions = ["Get", "List"]
 }
