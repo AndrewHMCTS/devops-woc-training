@@ -43,8 +43,8 @@ resource "azurerm_linux_web_app" "apps" {
     DB_HOST      = azurerm_key_vault_secret.db_host.value
     DB_NAME      = azurerm_key_vault_secret.db_name.value
     DB_PORT      = azurerm_key_vault_secret.db_port.value
-    # DATABASE_URL = azurerm_key_vault_secret.database_url.value
-    DATABASE_URL = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.database_url.id})"
+    DATABASE_URL = azurerm_key_vault_secret.database_url.value
+    # DATABASE_URL = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.database_url.id})"
     SECRET_KEY   = azurerm_key_vault_secret.secret_key.value
     WEBSITES_PORT = each.value.port
   }
