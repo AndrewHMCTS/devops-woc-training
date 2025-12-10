@@ -1,3 +1,4 @@
+# Virtual Network
 resource "azurerm_virtual_network" "vnet" {
   name                = "devops00-vnet-${var.env}"
   address_space       = ["10.0.0.0/16"]
@@ -5,7 +6,7 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-# Subnet for App Service VNet Integration
+# Subnet for App Service VNet Integration (Web App connects here)
 resource "azurerm_subnet" "snet_appservice" {
   name                 = "snet-appservice"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -21,7 +22,7 @@ resource "azurerm_subnet" "snet_appservice" {
   }
 }
 
-# Subnet for PostgreSQL Flexible Server (requires delegation)
+# Subnet for PostgreSQL Flexible Server (must be dedicated and delegated)
 resource "azurerm_subnet" "snet_postgresql" {
   name                 = "snet-postgresql"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -39,50 +40,12 @@ resource "azurerm_subnet" "snet_postgresql" {
   }
 }
 
-# Subnet for Private Endpoints (Key Vault)
+# Subnet for Private Endpoints (NO delegation allowed)
 resource "azurerm_subnet" "snet_private_endpoints" {
   name                 = "snet-private-endpoints"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.3.0/24"]
-}
-
-# Private Endpoint for Key Vault
-resource "azurerm_private_endpoint" "kv_pe" {
-  name                = "kv-pe-${var.env}"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  subnet_id           = azurerm_subnet.snet_private_endpoints.id
-
-  private_service_connection {
-    name                           = "kv-privateserviceconnection"
-    private_connection_resource_id = azurerm_key_vault.kv.id
-    subresource_names              = ["vault"]
-    is_manual_connection           = false
-  }
-}
-
-# Private DNS Zone for Key Vault
-resource "azurerm_private_dns_zone" "kv" {
-  name                = "privatelink.vaultcore.azure.net"
-  resource_group_name = azurerm_resource_group.rg.name
-}
-
-# Link Private DNS Zone to VNet
-resource "azurerm_private_dns_zone_virtual_network_link" "kv_link" {
-  name                  = "kv-dnslink-${var.env}"
-  resource_group_name   = azurerm_resource_group.rg.name
-  private_dns_zone_name = azurerm_private_dns_zone.kv.name
-  virtual_network_id    = azurerm_virtual_network.vnet.id
-}
-
-# DNS A Record for Key Vault Private Endpoint
-resource "azurerm_private_dns_a_record" "kv_record" {
-  name                = azurerm_key_vault.kv.name
-  zone_name           = azurerm_private_dns_zone.kv.name
-  resource_group_name = azurerm_resource_group.rg.name
-  ttl                 = 300
-  records             = [azurerm_private_endpoint.kv_pe.private_service_connection[0].private_ip_address]
 }
 
 # Private DNS Zone for PostgreSQL

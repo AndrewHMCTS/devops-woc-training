@@ -1,5 +1,17 @@
 data "azurerm_client_config" "current" {}
 
+resource "azurerm_private_dns_zone" "kv" {
+  name                = "privatelink.vaultcore.azure.net"
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "kv_link" {
+  name                  = "kv-dnslink-${var.env}"
+  resource_group_name   = azurerm_resource_group.rg.name
+  private_dns_zone_name = azurerm_private_dns_zone.kv.name
+  virtual_network_id    = azurerm_virtual_network.vnet.id
+}
+
 resource "azurerm_key_vault" "kv" {
   name                       = "devops00-kv-${var.env}"
   location                   = var.location
@@ -8,14 +20,6 @@ resource "azurerm_key_vault" "kv" {
   sku_name                   = "standard"
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
-
-  network_acls {
-    bypass         = "AzureServices"
-    default_action = "Allow"
-    virtual_network_subnet_ids = [
-      azurerm_subnet.snet_appservice.id
-    ]
-  }
 
   access_policy {
     tenant_id = data.azurerm_client_config.current.tenant_id
@@ -45,6 +49,25 @@ resource "azurerm_key_vault" "kv" {
       "WrapKey",
       "UnwrapKey",
     ]
+  }
+}
+
+resource "azurerm_private_endpoint" "kv_pe" {
+  name                = "kv-pe-${var.env}"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  subnet_id           = azurerm_subnet.snet_private_endpoints.id # Non-delegated subnet
+
+  private_service_connection {
+    name                           = "kv-privateserviceconnection"
+    private_connection_resource_id = azurerm_key_vault.kv.id
+    subresource_names              = ["vault"]
+    is_manual_connection           = false
+  }
+
+  private_dns_zone_group {
+    name                 = "kv-dns-zone-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.kv.id]
   }
 }
 
