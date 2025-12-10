@@ -48,20 +48,6 @@ resource "azurerm_key_vault" "kv" {
   }
 }
 
-resource "azurerm_private_endpoint" "kv_pe" {
-  name                = "kv-pe-${var.env}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  subnet_id           = azurerm_subnet.snet_pe.id
-
-  private_service_connection {
-    name                           = "kv-psc"
-    private_connection_resource_id = azurerm_key_vault.kv.id
-    is_manual_connection           = false
-    subresource_names              = ["vault"]
-  }
-}
-
 resource "azurerm_key_vault_access_policy" "terraform" {
   key_vault_id = azurerm_key_vault.kv.id
 
