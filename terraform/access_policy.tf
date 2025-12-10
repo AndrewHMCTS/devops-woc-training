@@ -21,7 +21,8 @@ locals {
     "Container Registry Contributor and Data Access Configuration Administrator",
     "AcrPull",
     "AcrPush",
-    "SQL DB Contributor"
+    "SQL DB Contributor",
+    "Key Vault Secrets User"
   ]
 }
 
