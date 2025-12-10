@@ -1,8 +1,3 @@
-resource "azurerm_resource_group" "rg_sbox" {
-  name     = "devops00-rg-sbox"
-  location = "East US"
-}
-
 resource "azurerm_virtual_network" "vnet" {
   name                = "devops00-vnet-${var.env}"
   address_space       = ["10.0.0.0/16"]
@@ -30,7 +25,7 @@ resource "azurerm_subnet" "snet_pe" {
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.2.0/24"]
-  service_endpoints    = ["Microsoft.Storage"]
+  service_endpoints    = ["Microsoft.Storage", "Microsoft.KeyVault"]
 
   delegation {
     name = "fs"
