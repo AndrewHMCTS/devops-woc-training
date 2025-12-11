@@ -45,6 +45,12 @@ resource "azurerm_linux_web_app" "apps" {
     SECRET_KEY                 = azurerm_key_vault_secret.secret_key.value
     WEBSITES_PORT              = each.value.port
   }
+
+  lifecycle {
+    ignore_changes = [
+      identity
+    ]
+  }
 }
 
 resource "azurerm_app_service_virtual_network_swift_connection" "apps_vnet" {
@@ -54,12 +60,4 @@ resource "azurerm_app_service_virtual_network_swift_connection" "apps_vnet" {
   subnet_id      = azurerm_subnet.snet_appservice.id
 
   depends_on = [azurerm_linux_web_app.apps]
-}
-
-resource "azurerm_role_assignment" "acr_pull" {
-  for_each = local.webapps
-
-  principal_id         = azurerm_linux_web_app.apps[each.key].identity[0].principal_id
-  role_definition_name = "AcrPull"
-  scope                = azurerm_container_registry.acr.id
 }
