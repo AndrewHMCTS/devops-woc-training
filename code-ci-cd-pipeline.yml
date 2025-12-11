@@ -163,6 +163,18 @@ stages:
                 echo "Pushing frontend image to ACR..."
                 docker push filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG}
 
+                STORAGE_ACCOUNT_NAME=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name storage-account-name --query value -o tsv)
+                STORAGE_ACCOUNT_KEY=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name storage-account-key --query value -o tsv)
+                CONTAINER_NAME=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name container-name --query value -o tsv)
+
+                DB_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name pg-user --query value -o tsv)
+                DB_PASSWORD=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name pg-password --query value -o tsv)
+                DB_HOST=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name db-host --query value -o tsv)
+                DB_NAME=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name db-name --query value -o tsv)
+                DB_PORT=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name db-port --query value -o tsv)
+                DATABASE_URL=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name database-url --query value -o tsv)
+                SECRET_KEY=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name secret-key --query value -o tsv)
+
                 echo "Clearing existing container settings on Web Apps ..."
                 az webapp config container delete \
                   --name devopswoc-backend \
@@ -171,11 +183,19 @@ stages:
                 echo "Setting Web App App Settings for devopswoc-frontend ..."
                 az webapp config appsettings set \
                   --name devopswoc-frontend \
-                  --resource-group ${{ lz.ResourceGroup }} \
+                  --resource-group devops00-rg-sbox \
                   --settings \
-                      DOCKER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
-                      DOCKER_REGISTRY_SERVER_USERNAME=$ACR_USER \
-                      DOCKER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
+                    AZURE_STORAGE_ACCOUNT_NAME="$STORAGE_ACCOUNT_NAME" \
+                    AZURE_STORAGE_ACCOUNT_KEY="$STORAGE_ACCOUNT_KEY" \
+                    AZURE_CONTAINER_NAME="$CONTAINER_NAME" \
+                    DB_USER="$DB_USER" \
+                    DB_PASSWORD="$DB_PASSWORD" \
+                    DB_HOST="$DB_HOST" \
+                    DB_NAME="$DB_NAME" \
+                    DB_PORT="$DB_PORT" \
+                    DATABASE_URL="$DATABASE_URL" \
+                    SECRET_KEY="$SECRET_KEY" \
+                    WEBSITES_PORT=80
 
                 echo "Deploying frontend image to Web App: devopswoc-frontend ..."
                 az webapp config container set \
