@@ -99,17 +99,26 @@ stages:
                 TAG=latest
                 echo "Using image tag: $TAG"
 
-                docker build -f ./Dockerfile.backend -t filevaultacrsbox.azurecr.io/backend:${TAG} .
+                docker build -f ./Dockerfile.backend -t filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG} .
 
                 echo "Pushing backend image to ACR..."
-                docker push filevaultacrsbox.azurecr.io/backend:${TAG}
+                docker push filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG}
+
+                echo "Setting Web App App Settings for devopswoc-backend-${{ deployment.environment }} ..."
+                az webapp config appsettings set \
+                  --name devopswoc-backend-${{ deployment.environment }} \
+                  --resource-group ${{ lz.ResourceGroup }} \
+                  --settings \
+                      DOCKER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
+                      DOCKER_REGISTRY_SERVER_USERNAME=$ACR_USER \
+                      DOCKER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
 
                 echo "Deploying backend image to Web App: devopswoc-backend-${{ deployment.environment }} ..."
                 az webapp config container set \
-                  --name devopswoc-backend \
+                  --name devopswoc-backend-${{ deployment.environment }} \
                   --resource-group ${{ lz.ResourceGroup }} \
-                  --docker-custom-image-name filevaultacrsbox.azurecr.io/backend:${TAG} \
-                  --docker-registry-server-url https://filevaultacrsbox.azurecr.io \
+                  --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG} \
+                  --docker-registry-server-url https://filevaultacr${{ deployment.environment }}.azurecr.io
               displayName: 'Deploy Backend to Web App'
 
           - job: BuildFrontend
@@ -144,17 +153,26 @@ stages:
                 TAG='latest'
                 echo "Using image tag: $TAG"
 
-                docker build -f ./Dockerfile.frontend -t filevaultacrsbox.azurecr.io/frontend:${TAG} .
+                docker build -f ./Dockerfile.frontend -t filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG} .
 
                 echo "Pushing frontend image to ACR..."
-                docker push filevaultacrsbox.azurecr.io/frontend:${TAG}
+                docker push filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG}
+
+                echo "Setting Web App App Settings for devopswoc-frontend-${{ deployment.environment }} ..."
+                az webapp config appsettings set \
+                  --name devopswoc-frontend-${{ deployment.environment }} \
+                  --resource-group ${{ lz.ResourceGroup }} \
+                  --settings \
+                      DOCKER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
+                      DOCKER_REGISTRY_SERVER_USERNAME=$ACR_USER \
+                      DOCKER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
 
                 echo "Deploying frontend image to Web App: devopswoc-frontend-${{ deployment.environment }} ..."
                 az webapp config container set \
-                  --name devopswoc-frontend \
+                  --name devopswoc-frontend-${{ deployment.environment }} \
                   --resource-group ${{ lz.ResourceGroup }} \
-                  --docker-custom-image-name filevaultacrsbox.azurecr.io/frontend:${TAG} \
-                  --docker-registry-server-url https://filevaultacrsbox.azurecr.io 
+                  --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG} \
+                  --docker-registry-server-url https://filevaultacr${{ deployment.environment }}.azurecr.io
               displayName: 'Deploy frontend to Web App'
 
                   # --docker-registry-server-user "$ACR_USER" \
