@@ -124,3 +124,21 @@ resource "azurerm_key_vault_secret" "secret_key" {
     ]
   }
 }
+
+resource "azurerm_key_vault_secret" "storage_account_name" {
+  name         = "AZURE-STORAGE-ACCOUNT-NAME"
+  value        = azurerm_storage_account.sa.name
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "storage_account_key" {
+  name         = "AZURE-STORAGE-ACCOUNT-KEY"
+  value        = data.azurerm_storage_account.sa.primary_access_key
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "container_name" {
+  name         = "AZURE-CONTAINER-NAME"
+  value        = azurerm_storage_container.container.name
+  key_vault_id = azurerm_key_vault.kv.id
+}

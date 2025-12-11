@@ -104,7 +104,12 @@ stages:
                 echo "Pushing backend image to ACR..."
                 docker push filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG}
 
-                echo "Setting Web App App Settings for devopswoc-backend-${{ deployment.environment }} ..."
+                echo "Clearing existing container settings on Web Apps ..."
+                az webapp config container delete \
+                  --name devopswoc-frontend \
+                  --resource-group ${{  lz.ResourceGroup }}
+
+                echo "Setting Web App App Settings for devopswoc-backend ..."
                 az webapp config appsettings set \
                   --name devopswoc-backend \
                   --resource-group ${{ lz.ResourceGroup }} \
@@ -113,9 +118,9 @@ stages:
                       DOCKER_REGISTRY_SERVER_USERNAME=$ACR_USER \
                       DOCKER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
 
-                echo "Deploying backend image to Web App: devopswoc-backend-${{ deployment.environment }} ..."
+                echo "Deploying backend image to Web App: devopswoc-backend ..."
                 az webapp config container set \
-                  --name devopswoc-backend-${{ deployment.environment }} \
+                  --name devopswoc-backend \
                   --resource-group ${{ lz.ResourceGroup }} \
                   --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG} \
                   --docker-registry-server-url https://filevaultacr${{ deployment.environment }}.azurecr.io
@@ -158,16 +163,21 @@ stages:
                 echo "Pushing frontend image to ACR..."
                 docker push filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG}
 
-                echo "Setting Web App App Settings for devopswoc-frontend-${{ deployment.environment }} ..."
+                echo "Clearing existing container settings on Web Apps ..."
+                az webapp config container delete \
+                  --name devopswoc-backend \
+                  --resource-group ${{  lz.ResourceGroup }}
+
+                echo "Setting Web App App Settings for devopswoc-frontend ..."
                 az webapp config appsettings set \
-                  --name devopswoc-frontend-${{ deployment.environment }} \
+                  --name devopswoc-frontend \
                   --resource-group ${{ lz.ResourceGroup }} \
                   --settings \
                       DOCKER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
                       DOCKER_REGISTRY_SERVER_USERNAME=$ACR_USER \
                       DOCKER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
 
-                echo "Deploying frontend image to Web App: devopswoc-frontend-${{ deployment.environment }} ..."
+                echo "Deploying frontend image to Web App: devopswoc-frontend ..."
                 az webapp config container set \
                   --name devopswoc-frontend \
                   --resource-group ${{ lz.ResourceGroup }} \
