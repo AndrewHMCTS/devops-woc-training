@@ -163,11 +163,11 @@ stages:
                 echo "Pushing frontend image to ACR..."
                 docker push filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG}
 
-                STORAGE_ACCOUNT_NAME=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name storage-account-name --query value -o tsv)
-                STORAGE_ACCOUNT_KEY=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name storage-account-key --query value -o tsv)
-                CONTAINER_NAME=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name container-name --query value -o tsv)
+                STORAGE_ACCOUNT_NAME=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name azure-storage-account-name --query value -o tsv)
+                STORAGE_ACCOUNT_KEY=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name azure-storage-account-key --query value -o tsv)
+                CONTAINER_NAME=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name azure-container-name --query value -o tsv)
 
-                DB_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name pg-user --query value -o tsv)
+                DB_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name pg-username --query value -o tsv)
                 DB_PASSWORD=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name pg-password --query value -o tsv)
                 DB_HOST=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name db-host --query value -o tsv)
                 DB_NAME=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name db-name --query value -o tsv)
