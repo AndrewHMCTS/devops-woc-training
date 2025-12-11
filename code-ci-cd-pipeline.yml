@@ -106,7 +106,7 @@ stages:
 
                 echo "Setting Web App App Settings for devopswoc-backend-${{ deployment.environment }} ..."
                 az webapp config appsettings set \
-                  --name devopswoc-backend-${{ deployment.environment }} \
+                  --name devopswoc-backend \
                   --resource-group ${{ lz.ResourceGroup }} \
                   --settings \
                       DOCKER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
@@ -169,7 +169,7 @@ stages:
 
                 echo "Deploying frontend image to Web App: devopswoc-frontend-${{ deployment.environment }} ..."
                 az webapp config container set \
-                  --name devopswoc-frontend-${{ deployment.environment }} \
+                  --name devopswoc-frontend \
                   --resource-group ${{ lz.ResourceGroup }} \
                   --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG} \
                   --docker-registry-server-url https://filevaultacr${{ deployment.environment }}.azurecr.io
