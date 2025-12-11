@@ -177,7 +177,7 @@ stages:
 
                 echo "Clearing existing container settings on Web Apps ..."
                 az webapp config container delete \
-                  --name devopswoc-backend \
+                  --name devopswoc-frontend \
                   --resource-group ${{  lz.ResourceGroup }}
 
                 echo "Setting Web App App Settings for devopswoc-frontend ..."
