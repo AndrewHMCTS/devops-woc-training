@@ -184,7 +184,7 @@ stages:
                   --docker-registry-server-password $ACR_PASS
               displayName: 'Deploy frontend to Web App'
 
-                  # --docker-registry-server-user "$ACR_USER" \
+                  # --docker-registry-server-user "$ACR_USER" \ 
                   # --docker-registry-server-password "$ACR_PASS"
                                   # echo "Deploying frontend image to Web App: devopswoc-frontend ..."
 
