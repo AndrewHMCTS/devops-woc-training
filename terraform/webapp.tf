@@ -26,10 +26,9 @@ resource "azurerm_linux_web_app" "apps" {
 
   site_config {
     application_stack {
-      docker_image_name   = "${azurerm_container_registry.acr.login_server}/${each.key}:${each.value.image}"
+  #     docker_image_name   = "${azurerm_container_registry.acr.login_server}/${each.key}:${each.value.image}"
       docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
     }
-    # vnet_route_all_enabled = true
   }
 
   app_settings = {
