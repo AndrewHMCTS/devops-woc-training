@@ -85,17 +85,12 @@ stages:
                 az account set --subscription ${{ lz.Subscription_ID }}
                 echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-                echo "Fetching credentials for KeyVault: ${{ lz.KeyVaultName }}"
-                ACR_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-USERNAME --query value -o tsv)
-                ACR_PASS=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-PASSWORD --query value -o tsv)
-
-                echo "##vso[task.setvariable variable=acrUser;issecret=true]$ACR_USER"
-                echo "##vso[task.setvariable variable=acrPass;issecret=true]$ACR_PASS"
+                echo "Logging into ACR using Azure CLI..."
+                az acr login --name filevaultacr${{ deployment.environment }}
 
                 echo "Building backend image..."
                 cd $(Build.SourcesDirectory)
 
-                echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
                 TAG=latest
                 echo "Using image tag: $TAG"
 
@@ -104,35 +99,19 @@ stages:
                 echo "Pushing backend image to ACR..."
                 docker push filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG}
 
-                echo "Clearing existing container settings on Web Apps ..."
-                az webapp config container delete \
-                  --name devopswoc-frontend \
-                  --resource-group ${{  lz.ResourceGroup }}
-
-                echo "Setting Web App App Settings for devopswoc-frontend ..."
-                az webapp config appsettings set \
-                  --name devopswoc-frontend \
-                  --resource-group ${{ lz.ResourceGroup }} \
-                  --settings \
-                      CONTAINER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
-                      CONTAINER_REGISTRY_SERVER_USERNAME=$ACR_USER \
-                      CONTAINER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
-
-                echo "Setting Web App Container Configuration for devopswoc-frontend ..."
+                echo "Updating Web App to use new image..."
                 az webapp config container set \
-                  --name devopswoc-frontend \
+                  --name devopswoc-backend \
                   --resource-group ${{ lz.ResourceGroup }} \
-                  --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG} \
-                  --docker-registry-server-url https://filevaultacr${{ deployment.environment }}.azurecr.io \
-                  --docker-registry-server-user $ACR_USER \
-                  --docker-registry-server-password $ACR_PASS
+                  --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG}
+                
+                echo "Restarting Web App to pull new image..."
+                az webapp restart \
+                  --name devopswoc-backend \
+                  --resource-group ${{ lz.ResourceGroup }}
               displayName: 'Deploy Backend to Web App'
+            
 
-          - job: BuildFrontend
-            displayName: 'Build Frontend'
-            pool:
-              vmImage: 'ubuntu-latest'
-            steps:
             - script: |
                 echo "Logging in with SP..."
                 az login --service-principal \
@@ -146,18 +125,13 @@ stages:
                 az account set --subscription ${{ lz.Subscription_ID }}
                 echo "Account Subscription set to ${{ lz.Subscription_ID }}"
 
-                echo "Fetching credentials for KeyVault: ${{ lz.KeyVaultName }}"
-                ACR_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-USERNAME --query value -o tsv)
-                ACR_PASS=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-PASSWORD --query value -o tsv)
-
-                echo "##vso[task.setvariable variable=acrUser;issecret=true]$ACR_USER"
-                echo "##vso[task.setvariable variable=acrPass;issecret=true]$ACR_PASS"
+                echo "Logging into ACR using Azure CLI..."
+                az acr login --name filevaultacr${{ deployment.environment }}
 
                 echo "Building frontend image..."
                 cd $(Build.SourcesDirectory)
 
-                echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
-                TAG='latest'
+                TAG=latest
                 echo "Using image tag: $TAG"
 
                 docker build -f ./Dockerfile.frontend -t filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG} .
@@ -165,27 +139,131 @@ stages:
                 echo "Pushing frontend image to ACR..."
                 docker push filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG}
 
-                echo "Setting Web App App Settings for devopswoc-frontend ..."
-                az webapp config appsettings set \
-                  --name devopswoc-frontend \
-                  --resource-group ${{ lz.ResourceGroup }} \
-                  --settings \
-                      CONTAINER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
-                      CONTAINER_REGISTRY_SERVER_USERNAME=$ACR_USER \
-                      CONTAINER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
-
-                echo "Setting Web App Container Configuration for devopswoc-frontend ..."
+                echo "Updating Web App to use new image..."
                 az webapp config container set \
                   --name devopswoc-frontend \
                   --resource-group ${{ lz.ResourceGroup }} \
-                  --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG} \
-                  --docker-registry-server-url https://filevaultacr${{ deployment.environment }}.azurecr.io \
-                  --docker-registry-server-user $ACR_USER \
-                  --docker-registry-server-password $ACR_PASS
+                  --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG}
+                
+                echo "Restarting Web App to pull new image..."
+                az webapp restart \
+                  --name devopswoc-frontend \
+                  --resource-group ${{ lz.ResourceGroup }}
               displayName: 'Deploy frontend to Web App'
 
-                  # --docker-registry-server-user "$ACR_USER" \ 
-                  # --docker-registry-server-password "$ACR_PASS"
+
+
+
+
+            # - script: |
+            #     echo "Logging in with SP..."
+            #     az login --service-principal \
+            #         --username ${{ lz.Client_ID }} \
+            #         --password ${{ lz.Client_Secret }} \
+            #         --tenant ${{ lz.Tenant_ID }}
+
+            #     echo "Checking subscriptions available to SP..."
+            #     az account list --query "[].{name:name, id:id}" -o table
+
+            #     az account set --subscription ${{ lz.Subscription_ID }}
+            #     echo "Account Subscription set to ${{ lz.Subscription_ID }}"
+
+            #     echo "Fetching credentials for KeyVault: ${{ lz.KeyVaultName }}"
+            #     ACR_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-USERNAME --query value -o tsv)
+            #     ACR_PASS=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-PASSWORD --query value -o tsv)
+
+            #     echo "##vso[task.setvariable variable=acrUser;issecret=true]$ACR_USER"
+            #     echo "##vso[task.setvariable variable=acrPass;issecret=true]$ACR_PASS"
+
+            #     echo "Building backend image..."
+            #     cd $(Build.SourcesDirectory)
+
+            #     echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
+            #     TAG=latest
+            #     echo "Using image tag: $TAG"
+
+            #     docker build -f ./Dockerfile.backend -t filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG} .
+
+            #     echo "Pushing backend image to ACR..."
+            #     docker push filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG}
+
+            #     echo "Setting Web App App Settings for devopswoc-backend ..."
+            #     az webapp config appsettings set \
+          #         --name devopswoc-backend \
+          #         --resource-group ${{ lz.ResourceGroup }} \
+          #         --settings \
+          #             CONTAINER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
+          #             CONTAINER_REGISTRY_SERVER_USERNAME=$ACR_USER \
+          #             CONTAINER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
+
+          #       echo "Setting Web App Container Configuration for devopswoc-backend ..."
+          #       az webapp config container set \
+          #         --name devopswoc-backend \
+          #         --resource-group ${{ lz.ResourceGroup }} \
+          #         --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG} \
+          #         --docker-registry-server-url https://filevaultacr${{ deployment.environment }}.azurecr.io \
+          #         --docker-registry-server-user $ACR_USER \
+          #         --docker-registry-server-password $ACR_PASS
+          #     displayName: 'Deploy Backend to Web App'
+
+          # - job: BuildFrontend
+          #   displayName: 'Build Frontend'
+          #   pool:
+          #     vmImage: 'ubuntu-latest'
+          #   steps:
+          #   - script: |
+          #       echo "Logging in with SP..."
+          #       az login --service-principal \
+          #           --username ${{ lz.Client_ID }} \
+          #           --password ${{ lz.Client_Secret }} \
+                #     --tenant ${{ lz.Tenant_ID }}
+
+                # echo "Checking subscriptions available to SP..."
+                # az account list --query "[].{name:name, id:id}" -o table
+
+                # az account set --subscription ${{ lz.Subscription_ID }}
+                # echo "Account Subscription set to ${{ lz.Subscription_ID }}"
+
+                # echo "Fetching credentials for KeyVault: ${{ lz.KeyVaultName }}"
+                # ACR_USER=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-USERNAME --query value -o tsv)
+                # ACR_PASS=$(az keyvault secret show --vault-name ${{ lz.KeyVaultName }} --name ACR-PASSWORD --query value -o tsv)
+
+                # echo "##vso[task.setvariable variable=acrUser;issecret=true]$ACR_USER"
+                # echo "##vso[task.setvariable variable=acrPass;issecret=true]$ACR_PASS"
+
+                # echo "Building frontend image..."
+                # cd $(Build.SourcesDirectory)
+
+                # echo "$ACR_PASS" | docker login filevaultacr${{ deployment.environment }}.azurecr.io -u "$ACR_USER" --password-stdin
+                # TAG='latest'
+                # echo "Using image tag: $TAG"
+
+                # docker build -f ./Dockerfile.frontend -t filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG} .
+
+                # echo "Pushing frontend image to ACR..."
+                # docker push filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG}
+
+                # echo "Setting Web App App Settings for devopswoc-frontend ..."
+                # az webapp config appsettings set \
+                #   --name devopswoc-frontend \
+                #   --resource-group ${{ lz.ResourceGroup }} \
+                #   --settings \
+                #       CONTAINER_REGISTRY_SERVER_URL=https://filevaultacr${{ deployment.environment }}.azurecr.io \
+                #       CONTAINER_REGISTRY_SERVER_USERNAME=$ACR_USER \
+                #       CONTAINER_REGISTRY_SERVER_PASSWORD=$ACR_PASS
+
+                # echo "Setting Web App Container Configuration for devopswoc-frontend ..."
+                # az webapp config container set \
+                #   --name devopswoc-frontend \
+              #     --resource-group ${{ lz.ResourceGroup }} \
+              #     --docker-custom-image-name filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG} \
+              #     --docker-registry-server-url https://filevaultacr${{ deployment.environment }}.azurecr.io \
+              #     --docker-registry-server-user $ACR_USER \
+              #     --docker-registry-server-password $ACR_PASS
+              # displayName: 'Deploy frontend to Web App'
+
+              #     # --docker-registry-server-user "$ACR_USER" \ 
+              #     # --docker-registry-server-password "$ACR_PASS"
                                   # echo "Deploying frontend image to Web App: devopswoc-frontend ..."
 
                 # az webapp config container set \
