@@ -26,10 +26,12 @@ resource "azurerm_linux_web_app" "apps" {
 
   site_config {
     application_stack {
-      docker_image_name = "${azurerm_container_registry.acr.login_server}/${each.key}:latest"
+      docker_image_name   = "${azurerm_container_registry.acr.login_server}/${each.key}:latest"
       docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
     }
     container_registry_use_managed_identity = true
+    health_check_path                       = "/health"
+    health_check_eviction_time_in_min       = 10
   }
 
   app_settings = {
@@ -51,8 +53,8 @@ resource "azurerm_linux_web_app" "apps" {
     # DB_NAME                    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_name.id})"
     # DB_PORT                    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_port.id})"
     # DATABASE_URL               = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.database_url.id})"
-    SECRET_KEY                 = azurerm_key_vault_secret.secret_key.value
-    WEBSITES_PORT              = each.value.port
+    SECRET_KEY    = azurerm_key_vault_secret.secret_key.value
+    WEBSITES_PORT = each.value.port
   }
 
   lifecycle {
