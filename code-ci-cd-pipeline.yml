@@ -108,8 +108,7 @@ stages:
                 az webapp config set \
                 -g devops00-rg-sbox \
                 -n devopswoc-backend \
-                --always-on true \  
-                --generic-configurations '{"healthCheckPath": "/health"}'
+                --generic-configurations '{"healthCheckPath": "/health", "alwaysOn": true}'
                 
                 echo "Restarting Web App to pull new image..."
                 az webapp restart \
@@ -155,7 +154,7 @@ stages:
                 -g devops00-rg-sbox \
                 -n devopswoc-frontend \
                 --always-on true \  
-                --generic-configurations '{"healthCheckPath": "/health"}'
+                --generic-configurations '{"healthCheckPath": "/health", "alwaysOn": true}'
 
                 echo "Restarting Web App to pull new image..."
                 az webapp restart \
