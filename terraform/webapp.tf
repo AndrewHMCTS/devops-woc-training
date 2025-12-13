@@ -26,7 +26,7 @@ resource "azurerm_linux_web_app" "apps" {
 
   site_config {
     application_stack {
-      docker_image_name   = "${azurerm_container_registry.acr.login_server}/${each.key}:latest"
+      docker_image_name   = "filevaultacr${var.env}.azurecr.io/${each.key}:latest"
       docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
     }
     container_registry_use_managed_identity = true
