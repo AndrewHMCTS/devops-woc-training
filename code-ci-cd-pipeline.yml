@@ -105,6 +105,11 @@ stages:
                   --resource-group ${{ lz.ResourceGroup }} \
                   --container-image-name filevaultacr${{ deployment.environment }}.azurecr.io/backend:${TAG}
                 
+                az webapp config set \
+                -g devops00-rg-sbox \
+                -n devopswoc-backend \
+                --generic-configurations '{"healthCheckPath": "/health", "alwaysOn": true}'
+                
                 echo "Restarting Web App to pull new image..."
                 az webapp restart \
                   --name devopswoc-backend \
@@ -145,14 +150,16 @@ stages:
                   --resource-group ${{ lz.ResourceGroup }} \
                   --container-image-name filevaultacr${{ deployment.environment }}.azurecr.io/frontend:${TAG}
                 
+                az webapp config set \
+                -g devops00-rg-sbox \
+                -n devopswoc-frontend \
+                --generic-configurations '{"healthCheckPath": "/health", "alwaysOn": true}'
+
                 echo "Restarting Web App to pull new image..."
                 az webapp restart \
                   --name devopswoc-frontend \
                   --resource-group ${{ lz.ResourceGroup }}
               displayName: 'Deploy frontend to Web App'
-
-
-
 
 
             # - script: |
