@@ -101,7 +101,12 @@ app.delete('/files/:key', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+// Health check endpoint for Azure App Service
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'healthy' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
 });
 

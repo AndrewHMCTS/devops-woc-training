@@ -53,8 +53,10 @@ resource "azurerm_linux_web_app" "apps" {
     # DB_NAME                    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_name.id})"
     # DB_PORT                    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db_port.id})"
     # DATABASE_URL               = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.database_url.id})"
-    SECRET_KEY    = azurerm_key_vault_secret.secret_key.value
-    WEBSITES_PORT = each.value.port
+    SECRET_KEY                        = azurerm_key_vault_secret.secret_key.value
+    WEBSITES_PORT                     = each.value.port
+    WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
+    DOCKER_ENABLE_CI                  = "true"
   }
 
   lifecycle {
