@@ -80,3 +80,7 @@ def list_files(include_deleted: bool = False, db: Session = Depends(get_db)):
 def delete_endpoint(file_id: int, db: Session = Depends(get_db)):
     delete_file(db, file_id)
     return {"status": "deleted", "file_id": file_id}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
