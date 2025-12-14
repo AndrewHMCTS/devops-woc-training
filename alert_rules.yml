@@ -1,0 +1,35 @@
+groups:
+  - name: api_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 2m
+        annotations:
+          summary: "High error rate on {{ $labels.instance }}"
+          
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds > 1
+        for: 5m
+        annotations:
+          summary: "API response time too high"
+
+  - name: service_health
+    rules:
+    - alert: ServiceDown
+      expr: up == 0
+      for: 30s
+      labels:
+        severity: critical
+      annotations:
+        summary: "{{ $labels.job }} is down"
+        description: "Instance {{ $labels.instance }} has been down for 30 seconds."
+
+  - name: test_alerts
+    rules:
+    - alert: AlwaysFiring
+      expr: vector(1)
+      for: 10s
+      labels:
+        severity: critical
+      annotations:
+        summary: "Test alert; should always fire"

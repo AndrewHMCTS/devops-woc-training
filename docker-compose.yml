@@ -1,15 +1,26 @@
+networks:
+  default:
+    name: devops-net
+    external: false
+
 services:
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: filevault_v1
+    container_name: filevault_frontend
+    networks:
+      - default
     ports:
       - "3000:3000"
     env_file:
       - src/azure-sa/.env
     environment:
       - BACKEND_URL=http://backend:8000 
+    labels:
+      co.elastic.logs/enabled: "true"
+      co.elastic.logs/json.keys_under_root: "true"
+      co.elastic.logs/json.add_error_key: "true"
     depends_on:
       - backend
 
@@ -18,38 +29,81 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     container_name: filevault_backend
+    networks:
+      - default
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/filevault_db
+    labels:
+      co.elastic.logs/enabled: "true"
+      co.elastic.logs/json.keys_under_root: "true"
+      co.elastic.logs/json.add_error_key: "true"
     depends_on:
       - db
     command: >
       sh -c "until pg_isready -h db -p 5432; do echo 'Waiting for DB...'; sleep 2; done;
            uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
-  # grafana:
-  #   image: grafana/grafana
-  #   ports:
-  #     - "4000:3000"
-  #   volumes:
-  #     - grafana_data:/var/lib/grafana
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "4000:3000"
+    environment:
+    - GF_SMTP_ENABLED=true
+    - GF_SMTP_HOST=smtp.gmail.com:587
+    - GF_SMTP_USER=${GF_SMTP_USER}
+    - GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
+    - GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS}
+    - GF_SMTP_FROM_NAME=Grafana Alerts
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
 
-  # prometheus:
-  #   image: prom/prometheus
-  #   ports:
-  #     - "9090:9090"
-  #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - prom_data:/prometheus
+    depends_on:
+      - node_exporter
 
-  # node_exporter:
-  #   image: prom/node-exporter
-  #   container_name: node_exporter
-  #   ports:
-  #     - "9100:9100"
+  node_exporter:
+    image: prom/node-exporter
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    env_file:
+    - .env
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - default
+    restart: unless-stopped
 
   db:
     image: postgres:18
+    container_name: postgres_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -61,9 +115,13 @@ services:
 
   adminer:
     image: adminer
+    container_name: adminer
     restart: always
     ports:
       - "8080:8080"
 
 volumes:
   postgres_data:
+  grafana_data:
+  prom_data:
+  alertmanager-data:
