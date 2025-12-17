@@ -36,20 +36,20 @@ resource "azurerm_linux_web_app" "apps" {
 
   app_settings = merge(
     {
-      APPLICATIONINSIGHTS_CONNECTION_STRING  = azurerm_application_insights.apps[each.key].connection_string
-      AZURE_STORAGE_ACCOUNT_NAME          = azurerm_key_vault_secret.storage_account_name.value
-      AZURE_STORAGE_ACCOUNT_KEY           = azurerm_key_vault_secret.storage_account_key.value
-      AZURE_CONTAINER_NAME                = azurerm_key_vault_secret.container_name.value
-      DB_USER                             = azurerm_key_vault_secret.pg_user.value
-      DB_PASSWORD                         = azurerm_key_vault_secret.pg_password.value
-      DB_HOST                             = azurerm_key_vault_secret.db_host.value
-      DB_NAME                             = azurerm_key_vault_secret.db_name.value
-      DB_PORT                             = azurerm_key_vault_secret.db_port.value
-      DATABASE_URL                        = azurerm_key_vault_secret.database_url.value
-      SECRET_KEY                          = azurerm_key_vault_secret.secret_key.value
-      WEBSITES_PORT                       = each.value.port
-      WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
-      DOCKER_ENABLE_CI                    = "true"
+      APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.apps[each.key].connection_string
+      AZURE_STORAGE_ACCOUNT_NAME            = azurerm_key_vault_secret.storage_account_name.value
+      AZURE_STORAGE_ACCOUNT_KEY             = azurerm_key_vault_secret.storage_account_key.value
+      AZURE_CONTAINER_NAME                  = azurerm_key_vault_secret.container_name.value
+      DB_USER                               = azurerm_key_vault_secret.pg_user.value
+      DB_PASSWORD                           = azurerm_key_vault_secret.pg_password.value
+      DB_HOST                               = azurerm_key_vault_secret.db_host.value
+      DB_NAME                               = azurerm_key_vault_secret.db_name.value
+      DB_PORT                               = azurerm_key_vault_secret.db_port.value
+      DATABASE_URL                          = azurerm_key_vault_secret.database_url.value
+      SECRET_KEY                            = azurerm_key_vault_secret.secret_key.value
+      WEBSITES_PORT                         = each.value.port
+      WEBSITES_ENABLE_APP_SERVICE_STORAGE   = "false"
+      DOCKER_ENABLE_CI                      = "true"
     },
     each.key == "frontend" ? {
       BACKEND_URL = "https://${local.webapps["backend"].name}.azurewebsites.net"

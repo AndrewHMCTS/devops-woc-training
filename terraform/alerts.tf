@@ -84,7 +84,7 @@ resource "azurerm_monitor_metric_alert" "response_time" {
     metric_name      = "AverageResponseTime"
     aggregation      = "Average"
     operator         = "GreaterThan"
-    threshold        = 5 
+    threshold        = 5
   }
 
   action {
@@ -131,7 +131,7 @@ resource "azurerm_monitor_metric_alert" "health_check" {
   resource_group_name = azurerm_resource_group.rg.name
   scopes              = [azurerm_linux_web_app.apps[each.key].id]
   description         = "Alert when health check fails"
-  severity            = 1 
+  severity            = 1
   frequency           = "PT1M"
   window_size         = "PT5M"
 
@@ -212,7 +212,7 @@ resource "azurerm_monitor_activity_log_alert" "app_stopped" {
   description         = "Alert when an app service is stopped"
 
   criteria {
-    resource_type = "Microsoft.Web/sites"
+    resource_type  = "Microsoft.Web/sites"
     operation_name = "Microsoft.Web/sites/stop/action"
     category       = "Administrative"
   }
@@ -233,7 +233,7 @@ resource "azurerm_monitor_activity_log_alert" "app_restarted" {
   description         = "Alert when an app service is restarted"
 
   criteria {
-    resource_type = "Microsoft.Web/sites"
+    resource_type  = "Microsoft.Web/sites"
     operation_name = "Microsoft.Web/sites/restart/action"
     category       = "Administrative"
   }
@@ -254,7 +254,7 @@ resource "azurerm_monitor_activity_log_alert" "app_deleted" {
   description         = "Alert when an app service is deleted"
 
   criteria {
-    resource_type = "Microsoft.Web/sites"
+    resource_type  = "Microsoft.Web/sites"
     operation_name = "Microsoft.Web/sites/delete"
     category       = "Administrative"
   }
@@ -272,12 +272,12 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "http_500_with_logs" {
   name                = "alert-http500-logs-${var.env}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
-  
+
   evaluation_frequency = "PT5M"
   window_duration      = "PT5M"
   scopes               = [azurerm_log_analytics_workspace.appservice.id]
   severity             = 2
-  
+
   criteria {
     query = <<-QUERY
       let timeRange = 5m;
@@ -293,7 +293,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "http_500_with_logs" {
       | project TimeGen, CsUriStem, ScStatus, ResultDescription, _ResourceId
       | summarize Count=count() by _ResourceId
     QUERY
-    
+
     time_aggregation_method = "Count"
     threshold               = 1
     operator                = "GreaterThan"
