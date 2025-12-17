@@ -69,6 +69,12 @@ resource "azurerm_role_assignment" "grafana_monitoring_reader_appinsights" {
   principal_id         = azurerm_dashboard_grafana.frontback.identity[0].principal_id
 }
 
+#grafana SP admin on grafana dashboard
+resource "azurerm_role_assignment" "grafana_admin_me" {
+  scope                = azurerm_dashboard_grafana.frontback.id
+  role_definition_name = "Grafana Admin"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
 
 
 
