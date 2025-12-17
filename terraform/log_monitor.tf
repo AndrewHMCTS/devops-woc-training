@@ -1,3 +1,14 @@
+resource "azurerm_monitor_workspace" "grafana" {
+  name                = "amw-devopswoc-${var.env}"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+
+  tags = {
+    Environment = var.env
+    Purpose     = "grafana-metrics"
+  }
+}
+
 resource "azurerm_log_analytics_workspace" "appservice" {
   name                = "law-devopswoc-${var.env}"
   location            = azurerm_resource_group.rg.location

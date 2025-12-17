@@ -5,7 +5,7 @@ resource "azurerm_dashboard_grafana" "frontback" {
   grafana_major_version = 11
 
   azure_monitor_workspace_integrations {
-    resource_id = azurerm_log_analytics_workspace.appservice.id
+    resource_id = azurerm_monitor_workspace.grafana.id
   }
 
   identity {
