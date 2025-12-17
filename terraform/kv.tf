@@ -71,11 +71,11 @@ resource "azurerm_key_vault_secret" "acr_pass" {
   key_vault_id = azurerm_key_vault.kv.id
 }
 
-resource "azurerm_key_vault_secret" "pg_user" {
-  name         = "PG-USERNAME"
-  value        = azurerm_postgresql_flexible_server.pg.administrator_login
-  key_vault_id = azurerm_key_vault.kv.id
-}
+# resource "azurerm_key_vault_secret" "pg_user" {
+#   name         = "PG-USERNAME"
+#   value        = azurerm_postgresql_flexible_server.pg.administrator_login
+#   key_vault_id = azurerm_key_vault.kv.id
+# }
 
 resource "azurerm_key_vault_secret" "pg_password" {
   name         = "PG-PASSWORD"
@@ -83,11 +83,11 @@ resource "azurerm_key_vault_secret" "pg_password" {
   key_vault_id = azurerm_key_vault.kv.id
 }
 
-resource "azurerm_key_vault_secret" "db_host" {
-  name         = "DB-HOST"
-  value        = azurerm_postgresql_flexible_server.pg.fqdn
-  key_vault_id = azurerm_key_vault.kv.id
-}
+# resource "azurerm_key_vault_secret" "db_host" {
+#   name         = "DB-HOST"
+#   value        = azurerm_postgresql_flexible_server.pg.fqdn
+#   key_vault_id = azurerm_key_vault.kv.id
+# }
 
 resource "azurerm_key_vault_secret" "db_name" {
   name         = "DB-NAME"
@@ -101,11 +101,11 @@ resource "azurerm_key_vault_secret" "db_port" {
   key_vault_id = azurerm_key_vault.kv.id
 }
 
-resource "azurerm_key_vault_secret" "database_url" {
-  name         = "DATABASE-URL"
-  value        = "postgresql://${azurerm_postgresql_flexible_server.pg.administrator_login}:${random_password.pg_password.result}@${azurerm_postgresql_flexible_server.pg.fqdn}:5432/${azurerm_postgresql_flexible_server_database.db.name}?sslmode=require"
-  key_vault_id = azurerm_key_vault.kv.id
-}
+# resource "azurerm_key_vault_secret" "database_url" {
+#   name         = "DATABASE-URL"
+#   value        = "postgresql://${azurerm_postgresql_flexible_server.pg.administrator_login}:${random_password.pg_password.result}@${azurerm_postgresql_flexible_server.pg.fqdn}:5432/${azurerm_postgresql_flexible_server_database.db.name}?sslmode=require"
+#   key_vault_id = azurerm_key_vault.kv.id
+# }
 
 resource "random_password" "secret_key" {
   length           = 64
