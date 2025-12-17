@@ -36,6 +36,7 @@ resource "azurerm_linux_web_app" "apps" {
 
   app_settings = merge(
     {
+      APPLICATIONINSIGHTS_CONNECTION_STRING  = azurerm_application_insights.apps[each.key].connection_string
       AZURE_STORAGE_ACCOUNT_NAME          = azurerm_key_vault_secret.storage_account_name.value
       AZURE_STORAGE_ACCOUNT_KEY           = azurerm_key_vault_secret.storage_account_key.value
       AZURE_CONTAINER_NAME                = azurerm_key_vault_secret.container_name.value

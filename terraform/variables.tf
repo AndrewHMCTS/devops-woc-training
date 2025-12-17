@@ -19,3 +19,9 @@ variable "client_id" {
   type        = string
   default     = ""
 }
+
+variable "alert_email" {
+  description = "Email for alert notifications"
+  type        = string
+  default     = "andrew.mcdevitt@solirius.com"
+}
