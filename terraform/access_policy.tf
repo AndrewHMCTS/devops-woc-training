@@ -1,6 +1,4 @@
-# least priviledge
-data "azurerm_client_config" "current" {}
-
+# least priviledge role assignments for service principal and managed identities
 ##SP
 #to read, write and manage the container registry
 resource "azurerm_role_assignment" "sp_acr_admin" {
