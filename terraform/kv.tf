@@ -89,11 +89,11 @@ resource "azurerm_key_vault_secret" "acr_pass" {
 #   key_vault_id = azurerm_key_vault.kv.id
 # }
 
-resource "azurerm_key_vault_secret" "db_name" {
-  name         = "DB-NAME"
-  value        = azurerm_postgresql_flexible_server_database.db.name
-  key_vault_id = azurerm_key_vault.kv.id
-}
+# resource "azurerm_key_vault_secret" "db_name" {
+#   name         = "DB-NAME"
+#   value        = azurerm_postgresql_flexible_server_database.db.name
+#   key_vault_id = azurerm_key_vault.kv.id
+# }
 
 resource "azurerm_key_vault_secret" "db_port" {
   name         = "db-port"
