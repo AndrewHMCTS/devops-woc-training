@@ -30,17 +30,10 @@ resource "azurerm_role_assignment" "grafana_monitoring_reader_law" {
 
 resource "azurerm_role_assignment" "grafana_monitoring_reader_apps" {
   for_each = {
-    for combo in flatten([
-      for dashboard_key, dashboard in {
-        fullstack = azurerm_dashboard_grafana.frontback
-        } : [
-        for app_key, app in azurerm_linux_web_app.apps : {
-          key          = "${dashboard_key}-${app_key}"
-          dashboard_id = dashboard.identity[0].principal_id
-          app_id       = app.id
-        }
-      ]
-    ]) : combo.key => combo
+    for app_key, app in azurerm_linux_web_app.apps : app_key => {
+      app_id       = app.id
+      dashboard_id = dashboard.identity[0].principal_id
+    }
   }
 
   scope                = each.value.app_id
@@ -50,17 +43,11 @@ resource "azurerm_role_assignment" "grafana_monitoring_reader_apps" {
 
 resource "azurerm_role_assignment" "grafana_monitoring_reader_appinsights" {
   for_each = {
-    for combo in flatten([
-      for dashboard_key, dashboard in {
-        fullstack = azurerm_dashboard_grafana.frontback
-        } : [
-        for app_key, appinsights in azurerm_application_insights.apps : {
-          key            = "${dashboard_key}-${app_key}"
-          dashboard_id   = dashboard.identity[0].principal_id
-          appinsights_id = appinsights.id
-        }
-      ]
-    ]) : combo.key => combo
+    for app_key, appinsights in azurerm_application_insights.apps : app_key => {
+      key            = "${dashboard_key}-${app_key}"
+      dashboard_id   = dashboard.identity[0].principal_id
+      appinsights_id = appinsights.id
+    }
   }
 
   scope                = each.value.appinsights_id
