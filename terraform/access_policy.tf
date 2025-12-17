@@ -14,6 +14,12 @@ resource "azurerm_role_assignment" "sp_kv_admin" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
+resource "azurerm_role_assignment" "sp_kv_secrets_officer" {
+  scope                = azurerm_key_vault.kv.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
 #provision resources in the resource group
 resource "azurerm_role_assignment" "sp_rg_contributor" {
   scope                = azurerm_resource_group.rg.id
