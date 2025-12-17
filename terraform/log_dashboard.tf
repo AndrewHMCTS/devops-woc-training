@@ -1,10 +1,19 @@
-#Update once I make a dashboard in UI and export proerties
-# resource "azurerm_portal_dashboard" "appservice" {
-#   name                = "dash-devopswoc-${var.env}"
-#   resource_group_name = azurerm_resource_group.rg.name
-#   location            = azurerm_resource_group.rg.location
+resource "azurerm_dashboard_grafana" "frontback" {
+  name                  = "grafana-frontback-${var.env}"
+  resource_group_name   = azurerm_resource_group.rg.name
+  location              = azurerm_resource_group.rg.location
+  grafana_major_version = 11
 
-#   tags = {
-#     Environment = var.env
-#   }
-# }
+  azure_monitor_workspace_integrations {
+    resource_id = azurerm_log_analytics_workspace.appservice.id
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = {
+    Environment = var.env
+    Purpose     = "full-stack-monitoring"
+  }
+}

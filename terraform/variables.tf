@@ -20,8 +20,8 @@ variable "client_id" {
   default     = ""
 }
 
-variable "alert_email" {
-  description = "Email for alert notifications"
-  type        = string
-  default     = "andrew.mcdevitt@solirius.com"
-}
+# variable "alert_email" {
+#   description = "Email for alert notifications"
+#   type        = string
+#   default     = "andrew.mcdevitt@solirius.com"
+# }
