@@ -2,6 +2,7 @@ resource "azurerm_dashboard_grafana" "frontback" {
   name                              = "grafana-frontback-${var.env}"
   resource_group_name               = azurerm_resource_group.rg.name
   location                          = azurerm_resource_group.rg.location
+  grafana_major_version             = 11
   api_key_enabled                   = false
   deterministic_outbound_ip_enabled = false
   public_network_access_enabled     = true
