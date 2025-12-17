@@ -43,30 +43,3 @@ resource "azurerm_monitor_diagnostic_setting" "kv" {
   }
 }
 
-
-data "azurerm_monitor_diagnostic_categories" "webapps" {
-  for_each    = azurerm_linux_web_app.apps
-  resource_id = each.value.id
-}
-
-resource "azurerm_monitor_diagnostic_setting" "webapps" {
-  for_each = azurerm_linux_web_app.apps
-
-  name                       = "send-all-to-law"
-  target_resource_id         = each.value.id
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.appservice.id
-
-  dynamic "enabled_log" {
-    for_each = data.azurerm_monitor_diagnostic_categories.webapps[each.key].log_category_types
-    content {
-      category = enabled_log.value
-    }
-  }
-
-  dynamic "metric" {
-    for_each = data.azurerm_monitor_diagnostic_categories.webapps[each.key].metrics
-    content {
-      category = metric.value
-    }
-  }
-}
