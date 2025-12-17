@@ -207,7 +207,7 @@ resource "azurerm_monitor_metric_alert" "memory_percentage" {
 
 resource "azurerm_monitor_activity_log_alert" "app_stopped" {
   name                = "alert-app-stopped-${var.env}"
-  location            = var.location
+  location            = "global"
   resource_group_name = azurerm_resource_group.rg.name
   scopes              = [azurerm_resource_group.rg.id]
   description         = "Alert when an app service is stopped"
@@ -229,7 +229,7 @@ resource "azurerm_monitor_activity_log_alert" "app_stopped" {
 
 resource "azurerm_monitor_activity_log_alert" "app_restarted" {
   name                = "alert-app-restarted-${var.env}"
-  location            = var.location
+  location            = "global"
   resource_group_name = azurerm_resource_group.rg.name
   scopes              = [azurerm_resource_group.rg.id]
   description         = "Alert when an app service is restarted"
@@ -251,7 +251,7 @@ resource "azurerm_monitor_activity_log_alert" "app_restarted" {
 
 resource "azurerm_monitor_activity_log_alert" "app_deleted" {
   name                = "alert-app-deleted-${var.env}"
-  location            = var.location
+  location            = "global"
   resource_group_name = azurerm_resource_group.rg.name
   scopes              = [azurerm_resource_group.rg.id]
   description         = "Alert when an app service is deleted"
