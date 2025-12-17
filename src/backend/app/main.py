@@ -1,3 +1,9 @@
+from azure.monitor.opentelemetry import configure_azure_monitor
+import logging
+
+configure_azure_monitor(logger_name="filevault.backend")
+logger = logging.getLogger("filevault.backend")
+
 from fastapi import FastAPI, UploadFile, File, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db, engine

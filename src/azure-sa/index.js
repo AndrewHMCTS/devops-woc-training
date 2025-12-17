@@ -1,3 +1,4 @@
+require('./telemetry');
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
@@ -6,6 +7,8 @@ const axios = require('axios');
 require('dotenv').config();
 
 const { BlobServiceClient, StorageSharedKeyCredential } = require('@azure/storage-blob');
+const { useAzureMonitor } = require("@azure/monitor-opentelemetry");
+useAzureMonitor();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

@@ -7,7 +7,7 @@ RUN pip install uv
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen
-RUN pip install fastapi uvicorn[standard] sqlalchemy psycopg2-binary python-dotenv requests python-multipart prometheus-fastapi-instrumentator
+RUN pip install fastapi uvicorn[standard] sqlalchemy psycopg2-binary python-dotenv requests python-multipart prometheus-fastapi-instrumentator azure-monitor-opentelemetry
 RUN apt-get update && apt-get install -y postgresql-client
 
 # Copy backend code
