@@ -44,6 +44,32 @@ resource "azurerm_role_assignment" "webapp_kv_secrets_user" {
   depends_on = [azurerm_linux_web_app.apps]
 }
 
+#grafana MI read log analytics workspace
+resource "azurerm_role_assignment" "grafana_monitoring_reader_law" {
+  name                 = "grafana-monitoring-reader-law-${var.env}"
+  scope                = azurerm_log_analytics_workspace.appservice.id
+  role_definition_name = "Monitoring Reader"
+  principal_id         = azurerm_dashboard_grafana.frontback.identity[0].principal_id
+}
+
+#grafana MI read webapps
+resource "azurerm_role_assignment" "grafana_monitoring_reader_apps" {
+  for_each = azurerm_linux_web_app.apps
+
+  scope                = each.value.id
+  role_definition_name = "Monitoring Reader"
+  principal_id         = azurerm_dashboard_grafana.frontback.identity[0].principal_id
+}
+
+#grafana MI read application insights
+resource "azurerm_role_assignment" "grafana_monitoring_reader_appinsights" {
+  for_each = azurerm_application_insights.apps
+
+  scope                = each.value.id
+  role_definition_name = "Monitoring Reader"
+  principal_id         = azurerm_dashboard_grafana.frontback.identity[0].principal_id
+}
+
 
 
 
