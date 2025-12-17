@@ -77,11 +77,11 @@ resource "azurerm_key_vault_secret" "acr_pass" {
 #   key_vault_id = azurerm_key_vault.kv.id
 # }
 
-resource "azurerm_key_vault_secret" "pg_password" {
-  name         = "PG-PASSWORD"
-  value        = random_password.pg_password.result
-  key_vault_id = azurerm_key_vault.kv.id
-}
+# resource "azurerm_key_vault_secret" "pg_password" {
+#   name         = "PG-PASSWORD"
+#   value        = random_password.pg_password.result
+#   key_vault_id = azurerm_key_vault.kv.id
+# }
 
 # resource "azurerm_key_vault_secret" "db_host" {
 #   name         = "DB-HOST"
