@@ -4,4 +4,5 @@ resource "azurerm_service_plan" "appplan" {
   location            = azurerm_resource_group.rg.location
   os_type             = "Linux"
   sku_name            = "B1"
+  maximum_elastic_worker_count = 10
 }
