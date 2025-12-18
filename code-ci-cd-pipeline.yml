@@ -6,7 +6,7 @@ trigger:
 pr:
   branches:
     include:
-      - main
+      - '*'
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -70,11 +70,12 @@ stages:
         displayName: "Run FastAPI Pytest Tests"
         steps:
           - script: |
-              echo "Installing dependencies..."
-              pip install -r requirements.txt
-              pip install pytest pytest-cov
-              echo "Running pytest..."
-              pytest -v --maxfail=1 --disable-warnings
+              pip install uv
+              uv pip install -r $(Build.SourcesDirectory)/src/backend/tests/requirements.txt --system
+
+              echo "Running backend unit tests"
+              pytest $(Build.SourcesDirectory)/src/backend/tests \
+                --junitxml=$(Build.ArtifactStagingDirectory)/pytest-results.xml -v
             displayName: "Run Pytest"
 
   - ${{ each deployment in parameters.environment_components }}:
