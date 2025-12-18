@@ -9,3 +9,4 @@ prometheus-fastapi-instrumentator
 azure-monitor-opentelemetry
 pytest
 pytest-dotenv
+httpx
