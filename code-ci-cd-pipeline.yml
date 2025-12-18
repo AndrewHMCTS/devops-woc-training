@@ -70,9 +70,16 @@ stages:
         displayName: "Run FastAPI Pytest Tests"
         steps:
           - script: |
-              pip install uv
-              uv pip install -r $(Build.SourcesDirectory)/src/backend/tests/requirements.txt --system
+              python3 -m venv venv
+              source venv/bin/activate
 
+              # Upgrade pip
+              pip install --upgrade pip
+
+              # Install requirements
+              pip install -r $(Build.SourcesDirectory)/src/backend/tests/requirements.txt
+
+              # Run tests
               echo "Running backend unit tests"
               pytest $(Build.SourcesDirectory)/src/backend/tests \
                 --junitxml=$(Build.ArtifactStagingDirectory)/pytest-results.xml -v
