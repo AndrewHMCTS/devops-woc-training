@@ -12,7 +12,9 @@ dependencies = [
     "requests",
     "python-multipart",
     "prometheus-fastapi-instrumentator",
-    "azure-monitor-opentelemetry"
+    "azure-monitor-opentelemetry",
+    "pytest",
+    "pytest-dotenv"
 ]
 requires-python = ">=3.11"
 
