@@ -10,7 +10,7 @@ resource "azurerm_postgresql_flexible_server" "pg" {
   version                = "15"
   administrator_login    = "pgadmin"
   administrator_password = random_password.pg_password.result
-  sku_name               = "GP_Standard_D4s_v3"
+  sku_name               = "B_Standard_B1ms"
   storage_mb             = 32768
   backup_retention_days  = 7
   zone                   = "2"
